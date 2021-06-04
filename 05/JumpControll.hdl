@@ -1,0 +1,40 @@
+//kontroler skoków
+
+
+CHIP JumpControll
+{
+    IN  
+       j1,
+       j2,
+       j3,
+       zr,
+       ng;
+
+    OUT 
+        out;
+
+    PARTS:
+    Not(in=j1, out=notj1);
+    Not(in=j2, out=notj2);
+    Not(in=j3, out=notj3);
+    Not(in=zr, out=notZr);
+    Not(in=ng, out=notNg);
+
+    And5(a=notj1,   b=notj2,    c=j3,      d=notZr, e=notNg,    out=and1);
+    And5(a=notj1,   b=j2,       c=notj3,   d=zr,    e=notNg,    out=and2);
+    Or(a=zr, b=notNg, out=wiekszeRowne);
+    And5(a=notj1,   b=j2,       c=j3,      d=true,  e=wiekszeRowne,    out=and3);
+    And5(a=j1,      b=notj2,    c=notj3,   d=notZr, e=ng,       out=and4);
+    And5(a=j1,      b=notj2,    c=j3,      d=notZr, e=true,     out=and5);
+    Or(a=zr, b=ng, out=mniejszeRowne);
+    And5(a=j1,      b=j2,       c=notj3,   d=true,  e=mniejszeRowne,       out=and6);
+    And5(a=j1,      b=j2,       c=j3,      d=true,  e=true,     out=and7);
+
+    Or(a=false, b=and1, out=and01);
+    Or(a=and2, b=and01, out=and012);
+    Or(a=and3, b=and012, out=and0123);
+    Or(a=and4, b=and0123, out=and01234);
+    Or(a=and5, b=and01234, out=and012345);
+    Or(a=and6, b=and012345, out=and0123456);
+    Or(a=and7, b=and0123456, out=out);        
+}

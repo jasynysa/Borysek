@@ -1,0 +1,32 @@
+class Point
+{
+    field int x;
+    field int y;
+
+    constructor Point new(int xA, int yA)
+    {
+        let x=xA;
+        let y=yA;
+    } 
+
+    method void turn(int alfa)
+    {
+        return;
+    }
+
+    method void move(int xM, yM)
+    {
+        let x+=xM;
+        let y+=yM;
+    }
+
+    method int getX()
+    {
+        return x;
+    }
+
+    method int getY()
+    {
+        return y;
+    }
+}

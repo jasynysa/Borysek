@@ -1,0 +1,27 @@
+//szesnastowejsciowy and
+CHIP Or16
+{
+    IN in[16];
+    OUT out;
+
+    PARTS:
+
+    Or(a=in[0], b=in[1], out=and0u1);
+    Or(a=in[2], b=in[3], out=and2u3);
+    Or(a=in[4], b=in[5], out=and4u5);
+    Or(a=in[6], b=in[7], out=and6u7);
+    Or(a=in[8], b=in[9], out=and8u9);
+    Or(a=in[10], b=in[11], out=and10u11);
+    Or(a=in[12], b=in[13], out=and12u13);
+    Or(a=in[14], b=in[15], out=and14u15);
+
+    Or(a=and0u1, b=and2u3, out=and0u1u2u3);
+    Or(a=and4u5, b=and6u7, out=and4u5u6u7);
+    Or(a=and8u9, b=and10u11, out=and8u9u10u11);
+    Or(a=and12u13, b=and14u15, out=and12u13u14u15);
+
+    Or(a=and0u1u2u3, b=and4u5u6u7, out=and0u1u2u3u4u5u6u7);
+    Or(a=and8u9u10u11, b=and12u13u14u15, out=and8u9u10u11u12u13u14u15);
+  
+    Or(a=and0u1u2u3u4u5u6u7, b=and8u9u10u11u12u13u14u15, out=out);
+}

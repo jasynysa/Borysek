@@ -1,0 +1,43 @@
+// This file is part of www.nand2tetris.org
+// and the book "The Elements of Computing Systems"
+// by Nisan and Schocken, MIT Press.
+// File name: projects/01/DMux8Way.hdl
+
+/**
+ * 8-way demultiplexor:
+ * {a, b, c, d, e, f, g, h} = {in, 0, 0, 0, 0, 0, 0, 0} if sel == 000
+ *                            {0, in, 0, 0, 0, 0, 0, 0} if sel == 001
+ *                            etc.
+ *                            {0, 0, 0, 0, 0, 0, 0, in} if sel == 111
+ */
+
+CHIP DMux8Way {
+    IN in, sel[3];
+    OUT a, b, c, d, e, f, g, h;
+
+    PARTS:
+        //negacja syglalow
+    Not(in=sel[0], out=notSel0);
+    Not(in=sel[1], out=notSel1);
+    Not(in=sel[2], out=notSel2);
+
+    //wyznaczanie kanalu aktywnego
+    And3In1Out(a=notSel2, b=notSel1, c=notSel0, out= czyA);
+    And3In1Out(a=notSel2, b=notSel1, c=sel[0], out= czyB);
+    And3In1Out(a=notSel2, b=sel[1], c=notSel0, out= czyC);
+    And3In1Out(a=notSel2, b=sel[1], c=sel[0], out= czyD);
+    And3In1Out(a=sel[2], b=notSel1, c=notSel0, out= czyE);
+    And3In1Out(a=sel[2], b=notSel1, c=sel[0], out= czyF);
+    And3In1Out(a=sel[2], b=sel[1], c=notSel0, out= czyG);
+    And3In1Out(a=sel[2], b=sel[1], c=sel[0], out= czyH);
+    
+    //wysylanie
+    And(a=in, b=czyA, out=a);
+    And(a=in, b=czyB, out=b);
+    And(a=in, b=czyC, out=c);
+    And(a=in, b=czyD, out=d);
+    And(a=in, b=czyE, out=e);
+    And(a=in, b=czyF, out=f);
+    And(a=in, b=czyG, out=g);
+    And(a=in, b=czyH, out=h);
+}

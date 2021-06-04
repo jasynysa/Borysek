@@ -1,0 +1,2 @@
+C:\Users\jasyn\OneDrive - Państwowa Wyższa Szkoła Zawodowa w Nysie\PROGRAMOWANIE\HDL\nand2tetris\projects\06\Assembler1\Debug\Assembler1.exe
+C:\Users\jasyn\OneDrive - Państwowa Wyższa Szkoła Zawodowa w Nysie\PROGRAMOWANIE\HDL\nand2tetris\projects\06\Assembler1\Debug\Assembler1.pdb

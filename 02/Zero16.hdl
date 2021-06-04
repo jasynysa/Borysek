@@ -1,0 +1,24 @@
+//16 zerowych bitow
+CHIP Zero16
+{
+    IN in;
+    OUT out[16];
+    
+    PARTS:
+    out[0]=false;
+    out[1]=false;
+    out[2]=false;
+    out[3]=false;
+    out[4]=false;
+    out[5]=false;
+    out[6]=false;
+    out[7]=false;
+    out[8]=false;
+    out[9]=false;
+    out[10]=false;
+    out[11]=false;
+    out[12]=false;
+    out[13]=false;
+    out[14]=false;
+    out[15]=false;
+}

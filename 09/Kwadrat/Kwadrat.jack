@@ -1,0 +1,72 @@
+class Kwadrat
+{
+    /*
+    p0--------p1
+    |         |
+    |         |
+    |         |
+    p3--------p2
+    */
+    field Point p0;
+    field Point p1;
+    field Point p2;
+    field Point p3;
+    field int rAlfa;
+
+
+    constructor Kwadrat new(int size)
+    {        
+        let p0 = Point.new(-size,size);
+        let p1 = Point.new(size,size);
+        let p2 = Point.new(size,-size);
+        let p3 = Point.new(-size,-size);
+        let rAlfa =0;
+        return this;
+    }
+
+    method void draw()
+    {
+        //obracanie o podany wektor
+        var Point p0r;
+        var Point p1r;
+        var Point p2r;
+        var Point p3r;
+        let p0r =p0;
+        let p1r =p1;
+        let p2r =p2;
+        let p3r =p3;
+        p0r.turn(rAlfa);
+        p1r.turn(rAlfa);
+        p2r.turn(rAlfa);
+        p3r.turn(rAlfa);
+        //sprowadzanie do ukladu wspolrzednych ekranu (kwadrat bedzie do gory nogami)
+        p0r.move(200,100);
+        p1r.move(200,100);
+        p2r.move(200,100);
+        p3r.move(200,100);
+
+        //rysowanie lini
+        Screen.drawLine(p0r.getX(), p0r.getY(), p1r.getX(), p1r.getY());
+        Screen.drawLine(p1r.getX(), p1r.getY(), p2r.getX(), p2r.getY());
+        Screen.drawLine(p2r.getX(), p2r.getY(), p3r.getX(), p3r.getY());
+        Screen.drawLine(p3r.getX(), p3r.getY(), p0r.getX(), p0r.getY());
+        return;
+    }
+
+    method void clear()
+    {
+        Screen.clearScreen();
+        return;
+    }
+
+    method void turn(int alfa)
+    {
+        let rAlfa += alfa;
+        return;
+    }
+
+    method void dispose()
+    {
+        Memory.deAlloc(this);
+    }
+}
