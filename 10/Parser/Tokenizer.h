@@ -25,6 +25,18 @@ public:
 		}
 		
 	}
+	bool hasTokens(EnumToken t)
+	{
+		if (itVectorTokenow < vectorTokenow.size())
+		{
+			if (vectorTokenow[itVectorTokenow].token == t)
+			{
+				itVectorTokenow++;
+				return true;
+			}
+		}
+		return false;
+	}
 	//@szukaneTokeny- ciag szukanych tokenow
 		//jezlei w aktualnej pozycji znajduja sie kolejno szukane tokeny to zwaraca true 
 	bool hasTokens(vector<EnumToken> szukaneTokeny)
@@ -35,7 +47,7 @@ public:
 			czyPasuje = true;
 			for (int i = 0; i < szukaneTokeny.size(); i++)
 			{
-				if (!vectorTokenow[itVectorTokenow + i].token == szukaneTokeny[i])
+				if (vectorTokenow[itVectorTokenow + i].token != szukaneTokeny[i])
 				{
 					czyPasuje = false;
 				}

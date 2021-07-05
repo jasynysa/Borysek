@@ -141,60 +141,46 @@ private:
 		//itVectorTokenow++;
 		//glebokosc--;
 	}
+
+	//('constructor' | 'function' | 'method') ('void' | type) subroutineName '(' parameterList ')' subroutineBody
 	bool parseClassSubroutineDeclarationAndGenerateCode()
 	{
-		//glebokosc++;
-		////poczatek deklaracji funkcji klasy
-		//plikXML << tabulacja() << "<subroutinesDec>" << std::endl;
-
-		//glebokosc++;
-		//while ( //dopoki iterator wskazuje na token oznaczajacy poczatek definicji funkcji
-		//	[this]
-		//	{
-		//		if (itVectorTokenow < vectorTokenow.size())
-		//		{
-		//			if (vectorTokenow[itVectorTokenow].token == constructor || vectorTokenow[itVectorTokenow].token == function || vectorTokenow[itVectorTokenow].token == method)
-		//			{
-		//				return true;
-		//			}
-		//		}
-		//		return false;
-		//	}())
-		//{
-		//	itVectorTokenow++;
-		//	if (itVectorTokenow + 2 < vectorTokenow.size())
-		//	{
-		//		if ((vectorTokenow[itVectorTokenow].token == voiD || isType(vectorTokenow[itVectorTokenow])) && vectorTokenow[itVectorTokenow++].token == identifier && vectorTokenow[itVectorTokenow++].token == roundL)
-		//		{
-		//			itVectorTokenow++;
-		//			parseParamiterList();
-		//			if()
-		//			if (vectorTokenow[itVectorTokenow].token==roundR)
-		//			{
-
-		//			}
-		//		}
-		//		else
-		//		{
-		//			throw exception();
-		//		}
-		//	}
-		//	else
-		//	{
-		//		throw exception();
-		//	}
-		//	
-		//}
-
-		//	//koniec deklaracji funkcji kalsy
-		//	plikXML << tabulacja() << "</subroutinesDec>" << std::endl;
-		//	glebokosc--;
+		//('constructor' | 'function' | 'method')
+		if (!tokenizer.hasTokens({ [](EnumToken t) {return t==constructor||t==function||t==method? true: false; }}))
+		{
+			return false;
+		}
+		//('void' | type) subroutineName '(' 
+		if (tokenizer.hasTokens({ [](EnumToken t) {return t == voiD || t == isType(t) ? true : false; },[](EnumToken t) {return t == identifier; },[](EnumToken t) {return t == roundL;} })
+			
+			&&
+			//parameterList
+			parseParamiterListAndGenerateCode()
+			&&
+			//')'
+			tokenizer.hasTokens(roundR)
+			&&
+			//subroutineBody
+			parseSubroutineBodyAndGenerateCode()		
+			)
+		{
+			return true;
+		}
+		else
+		{
+			throw exception("wrong soubroutine definition");
+		}
 		return false;
 	}
 
-	void parseParamiterList()
+	bool parseParamiterListAndGenerateCode()
 	{
+		return false;
+	}
 
+	bool parseSubroutineBodyAndGenerateCode()
+	{
+		return false;
 	}
 
 	static bool isType(EnumToken t)
@@ -208,8 +194,4 @@ private:
 			return false;
 		}
 	}
-
-
-
-
 };
