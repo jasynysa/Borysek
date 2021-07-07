@@ -1,21 +1,16 @@
 ﻿  Compiler.cpp
 C:\Users\jasyn\OneDrive - Państwowa Wyższa Szkoła Zawodowa w Nysie\PROGRAMOWANIE\HDL\nand2tetris\projects\10\Parser\Tokenizer.h(24,10): warning C4834: odrzucanie zwracanej wartości funkcji z atrybutem „nodiscard”
-C:\Users\jasyn\OneDrive - Państwowa Wyższa Szkoła Zawodowa w Nysie\PROGRAMOWANIE\HDL\nand2tetris\projects\10\Parser\Tokenizer.h(46,1): warning C4267: "+=": konwersja z "size_t" do "int", możliwa utrata danych
-C:\Users\jasyn\OneDrive - Państwowa Wyższa Szkoła Zawodowa w Nysie\PROGRAMOWANIE\HDL\nand2tetris\projects\10\Parser\Tokenizer.h(69,1): warning C4267: "+=": konwersja z "size_t" do "int", możliwa utrata danych
-C:\Users\jasyn\OneDrive - Państwowa Wyższa Szkoła Zawodowa w Nysie\PROGRAMOWANIE\HDL\nand2tetris\projects\10\Parser\Tokenizer.h(124,14): warning C4244: "inicjowanie": konwersja z "std::streamoff" do "int", możliwa utrata danych
+C:\Users\jasyn\OneDrive - Państwowa Wyższa Szkoła Zawodowa w Nysie\PROGRAMOWANIE\HDL\nand2tetris\projects\10\Parser\Tokenizer.h(58,1): warning C4267: "+=": konwersja z "size_t" do "int", możliwa utrata danych
+C:\Users\jasyn\OneDrive - Państwowa Wyższa Szkoła Zawodowa w Nysie\PROGRAMOWANIE\HDL\nand2tetris\projects\10\Parser\Tokenizer.h(93,1): warning C4267: "+=": konwersja z "size_t" do "int", możliwa utrata danych
+C:\Users\jasyn\OneDrive - Państwowa Wyższa Szkoła Zawodowa w Nysie\PROGRAMOWANIE\HDL\nand2tetris\projects\10\Parser\Tokenizer.h(148,14): warning C4244: "inicjowanie": konwersja z "std::streamoff" do "int", możliwa utrata danych
 C:\Users\jasyn\OneDrive - Państwowa Wyższa Szkoła Zawodowa w Nysie\PROGRAMOWANIE\HDL\nand2tetris\projects\10\Parser\CodeGenerator.h(30,7): warning C4129: "c": nierozpoznany znak sekwencji ucieczki
-C:\Users\jasyn\OneDrive - Państwowa Wyższa Szkoła Zawodowa w Nysie\PROGRAMOWANIE\HDL\nand2tetris\projects\10\Parser\ParserAndCodeGenerator.h(22,10): warning C4834: odrzucanie zwracanej wartości funkcji z atrybutem „nodiscard”
+C:\Users\jasyn\OneDrive - Państwowa Wyższa Szkoła Zawodowa w Nysie\PROGRAMOWANIE\HDL\nand2tetris\projects\10\Parser\ParserAndCodeGenerator.h(104,1): warning C4805: "==": niebezpieczne połączenie typu "EnumToken" oraz typu "bool" w operacji
   Parser.cpp
 C:\Users\jasyn\OneDrive - Państwowa Wyższa Szkoła Zawodowa w Nysie\PROGRAMOWANIE\HDL\nand2tetris\projects\10\Parser\Tokenizer.h(24,10): warning C4834: odrzucanie zwracanej wartości funkcji z atrybutem „nodiscard”
-C:\Users\jasyn\OneDrive - Państwowa Wyższa Szkoła Zawodowa w Nysie\PROGRAMOWANIE\HDL\nand2tetris\projects\10\Parser\Tokenizer.h(46,1): warning C4267: "+=": konwersja z "size_t" do "int", możliwa utrata danych
-C:\Users\jasyn\OneDrive - Państwowa Wyższa Szkoła Zawodowa w Nysie\PROGRAMOWANIE\HDL\nand2tetris\projects\10\Parser\Tokenizer.h(69,1): warning C4267: "+=": konwersja z "size_t" do "int", możliwa utrata danych
-C:\Users\jasyn\OneDrive - Państwowa Wyższa Szkoła Zawodowa w Nysie\PROGRAMOWANIE\HDL\nand2tetris\projects\10\Parser\Tokenizer.h(124,14): warning C4244: "inicjowanie": konwersja z "std::streamoff" do "int", możliwa utrata danych
+C:\Users\jasyn\OneDrive - Państwowa Wyższa Szkoła Zawodowa w Nysie\PROGRAMOWANIE\HDL\nand2tetris\projects\10\Parser\Tokenizer.h(58,1): warning C4267: "+=": konwersja z "size_t" do "int", możliwa utrata danych
+C:\Users\jasyn\OneDrive - Państwowa Wyższa Szkoła Zawodowa w Nysie\PROGRAMOWANIE\HDL\nand2tetris\projects\10\Parser\Tokenizer.h(93,1): warning C4267: "+=": konwersja z "size_t" do "int", możliwa utrata danych
+C:\Users\jasyn\OneDrive - Państwowa Wyższa Szkoła Zawodowa w Nysie\PROGRAMOWANIE\HDL\nand2tetris\projects\10\Parser\Tokenizer.h(148,14): warning C4244: "inicjowanie": konwersja z "std::streamoff" do "int", możliwa utrata danych
 C:\Users\jasyn\OneDrive - Państwowa Wyższa Szkoła Zawodowa w Nysie\PROGRAMOWANIE\HDL\nand2tetris\projects\10\Parser\CodeGenerator.h(30,7): warning C4129: "c": nierozpoznany znak sekwencji ucieczki
-C:\Users\jasyn\OneDrive - Państwowa Wyższa Szkoła Zawodowa w Nysie\PROGRAMOWANIE\HDL\nand2tetris\projects\10\Parser\ParserAndCodeGenerator.h(22,10): warning C4834: odrzucanie zwracanej wartości funkcji z atrybutem „nodiscard”
-  Tokenizer.cpp
-C:\Users\jasyn\OneDrive - Państwowa Wyższa Szkoła Zawodowa w Nysie\PROGRAMOWANIE\HDL\nand2tetris\projects\10\Parser\Tokenizer.h(24,10): warning C4834: odrzucanie zwracanej wartości funkcji z atrybutem „nodiscard”
-C:\Users\jasyn\OneDrive - Państwowa Wyższa Szkoła Zawodowa w Nysie\PROGRAMOWANIE\HDL\nand2tetris\projects\10\Parser\Tokenizer.h(46,1): warning C4267: "+=": konwersja z "size_t" do "int", możliwa utrata danych
-C:\Users\jasyn\OneDrive - Państwowa Wyższa Szkoła Zawodowa w Nysie\PROGRAMOWANIE\HDL\nand2tetris\projects\10\Parser\Tokenizer.h(69,1): warning C4267: "+=": konwersja z "size_t" do "int", możliwa utrata danych
-C:\Users\jasyn\OneDrive - Państwowa Wyższa Szkoła Zawodowa w Nysie\PROGRAMOWANIE\HDL\nand2tetris\projects\10\Parser\Tokenizer.h(124,14): warning C4244: "inicjowanie": konwersja z "std::streamoff" do "int", możliwa utrata danych
+C:\Users\jasyn\OneDrive - Państwowa Wyższa Szkoła Zawodowa w Nysie\PROGRAMOWANIE\HDL\nand2tetris\projects\10\Parser\ParserAndCodeGenerator.h(104,1): warning C4805: "==": niebezpieczne połączenie typu "EnumToken" oraz typu "bool" w operacji
   Generowanie kodu...
   Parser.vcxproj -> C:\Users\jasyn\OneDrive - Państwowa Wyższa Szkoła Zawodowa w Nysie\PROGRAMOWANIE\HDL\nand2tetris\projects\10\Parser\x64\Debug\Parser.exe

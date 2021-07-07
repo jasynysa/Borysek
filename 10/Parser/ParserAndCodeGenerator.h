@@ -19,7 +19,7 @@ public:
 		}
 		catch (const std::exception& e)
 		{
-			e.what();
+			cout<<e.what();
 		}
 
 	}
@@ -43,9 +43,9 @@ private:
 			//rozpoczecie definicji kalsy
 			codeGenerator.classDefinitionStart(tokenizer.getValue(-1));
 			//classVarDec*
-			while (parseClassVariableDeclarationAndGenerateCode()) {}
+			while (parseClassVariableDefinitionAndGenerateCode()) {}
 			//subroutineDec*
-			while (parseClassSubroutineDeclarationAndGenerateCode()) {}
+			while (parseClassSubroutineDefinitionAndGenerateCode()) {}
 			//zakonczenie definicji klasy
 			codeGenerator.classDefinitionEnd();
 			//'}'
@@ -58,23 +58,20 @@ private:
 		{
 			throw exception("wrong class definition");
 		}
-
-		
-
 	}
 
 	//('static' | 'field') type varName(',' varName) * ';'
-	bool parseClassVariableDeclarationAndGenerateCode()
+	bool parseClassVariableDefinitionAndGenerateCode()
 	{
 		//('static' | 'field')
-		if (!tokenizer.hasTokens({ [](EnumToken t) {return t == statiC || t == field ? true : false; } }))
+		if (!tokenizer.hasTokens([](EnumToken t) {return t == statiC || t == field ? true : false; }))
 		{
 			return false;
 		}
 		//type varName
 		else if (tokenizer.hasTokens({ isType,[](EnumToken t) {return t == identifier ? true : false; } }))
 		{
-			EnumToken typ= tokenizer.getToken(-2);
+			Token typ = tokenizer.getToken(-2);
 			//(',' varName)*
 			do
 			{
@@ -92,95 +89,125 @@ private:
 		{
 			throw exception("nieprawidlowa definicja zmiennej");
 		}
-		//glebokosc++;		
-		////poczatek deklaracji atrybotow
-		//plikXML << tabulacja() << "<variablesDec>" << std::endl;
 
-		//glebokosc++;
-		//while ([this] {if (itVectorTokenow + 2 < vectorTokenow.size()) {
-		//	if ((vectorTokenow[itVectorTokenow].token == statiC || vectorTokenow[itVectorTokenow].token == field) && isType(vectorTokenow[itVectorTokenow + 1]) && vectorTokenow[itVectorTokenow + 2].token == identifier) { return true; }
-		//}return false; }())//czy poczatek deklaracji jeset prawidlowy
-		//{//niezmiennik petli: itVector tokenow wskazuje na typ zmiennej
-		//	EnumToken typ = vectorTokenow[itVectorTokenow + 1].token;
-
-		//	do//niezmiennik petli: itVectorTokenow wskazuje na nazwe zmiennej
-		//	{
-		//		itVectorTokenow += 2;
-		//		//zapisywanie atrybutu
-		//		plikXML << tabulacja() + "<variable>" << endl
-		//			<< tabulacja() + "\t<type>" + tokenyNazwa[typ] + "</type>"<<endl
-		//			<< tabulacja() + "\t<name>" + vectorTokenow[itVectorTokenow].wartosc + "<name>" << endl
-		//			<< tabulacja() + "</variable>" << endl;
-
-		//	} while ([this] {if (itVectorTokenow + 2 < vectorTokenow.size()) {
-		//		if (vectorTokenow[itVectorTokenow + 1].token == comma && vectorTokenow[itVectorTokenow + 2].token == identifier) { return true; }
-		//	}return false; }());			
-		//	itVectorTokenow++;
-
-		//	//sprawdzanie czy na koncu jest srednik
-		//	{
-		//		bool czyJestSrednik = false;
-		//		if (itVectorTokenow  < vectorTokenow.size())
-		//		{
-		//			if (vectorTokenow[itVectorTokenow].token == semicolon)
-		//			{
-		//				czyJestSrednik = true;
-		//			}
-		//		}
-		//		if (!czyJestSrednik)
-		//		{
-		//			throw exception("brak srednika");
-		//		}
-		//		itVectorTokenow++;
-		//	}
-		//}
-		//glebokosc--;
-
-		//	//koniec deklaracji atrybutow
-		//plikXML << tabulacja() << "</variablesDec>" << std::endl;
-		//itVectorTokenow++;
-		//glebokosc--;
 	}
 
-	//('constructor' | 'function' | 'method') ('void' | type) subroutineName '(' parameterList ')' subroutineBody
-	bool parseClassSubroutineDeclarationAndGenerateCode()
+	//('constructor' | 'function' | 'method') ('void' | type) subroutineName parameterList subroutineBody
+	bool parseClassSubroutineDefinitionAndGenerateCode()
 	{
 		//('constructor' | 'function' | 'method')
-		if (!tokenizer.hasTokens({ [](EnumToken t) {return t==constructor||t==function||t==method? true: false; }}))
+		if (!tokenizer.hasTokens([](EnumToken t) {return t == constructor || t == function || t == method ? true : false; }))
 		{
 			return false;
 		}
-		//('void' | type) subroutineName '(' 
-		if (tokenizer.hasTokens({ [](EnumToken t) {return t == voiD || t == isType(t) ? true : false; },[](EnumToken t) {return t == identifier; },[](EnumToken t) {return t == roundL;} })
-			
-			&&
-			//parameterList
-			parseParamiterListAndGenerateCode()
-			&&
-			//')'
-			tokenizer.hasTokens(roundR)
-			&&
-			//subroutineBody
-			parseSubroutineBodyAndGenerateCode()		
-			)
-		{
-			return true;
-		}
-		else
+		//('void' | type) subroutineName  
+		if (!tokenizer.hasTokens({ [](EnumToken t) {return t == voiD || t == isType(t) ? true : false; },[](EnumToken t) {return t == identifier; } }))
 		{
 			throw exception("wrong soubroutine definition");
 		}
-		return false;
+		//poczatek deklaracji Subrutyny------------------------
+
+		//parameterList
+		if (!parseParamiterListAndGenerateCode())
+		{
+			throw exception("parameter list expected");
+		}
+		//subroutineBody
+		if (!parseSubroutineBodyAndGenerateCode())
+		{
+			throw exception("sobroutine body expected");
+		}
+		//koniec dekalracji subrutyny---------------------------
+
+		return true;
 	}
 
+	//'(' ( type varName (',' type varName)* )? ')'
 	bool parseParamiterListAndGenerateCode()
 	{
-		return false;
+		// '(' type varName
+		if (!tokenizer.hasTokens(roundL))
+		{
+			return false;
+		}
+		//codeGenerator.paramiterListStart();----------------
+
+		if (tokenizer.hasTokens(isType) && tokenizer.hasTokens(identifier))
+		{
+			do
+			{
+				//codeGenerator.paramiterDefinition();----------------
+
+			//(',' type varName)*
+			} while (tokenizer.hasTokens(comma) && tokenizer.hasTokens(isType) && tokenizer.hasTokens(identifier));
+		}
+		// ')'
+		if (!tokenizer.hasTokens(roundR))
+		{
+			throw exception("expected ')'");
+		}
+		//codeGenerator.paramiterListEnd();----------------------
+
+		return true;
 	}
 
+	//'{' varDec* statements? '}'
 	bool parseSubroutineBodyAndGenerateCode()
 	{
-		return false;
+		//'{'
+		if (!tokenizer.hasTokens(curlyL))
+		{
+			return false;
+		}
+		//codeGenerator.subroutineBodyStart();
+
+		//varDec*
+		while (parseVariableDefinitionAndGenerateCode()) {}
+
+		//statements?
+		parseStatemantsAndGenerateCode();
+
+		//'}'
+		if (!tokenizer.hasTokens(curlyR))
+		{
+			throw exception("expected '}'");
+		}
+		//codeGenerator.subroutineBodyEnd();
+
+		return true;
+	}
+
+	//'var' type varName (',' varName)* ';'
+	bool parseVariableDefinitionAndGenerateCode()
+	{
+		//'var'
+		if (!tokenizer.hasTokens(var))
+		{
+			return false;
+		}
+		//type varName
+		if (!(tokenizer.hasTokens(isType) && tokenizer.hasTokens(identifier)))
+		{
+			throw exception("wrong variable Definition");
+		}
+		do
+		{
+			//codeGenerator.variableDefinition();
+
+			//(',' varName)*
+		} while (tokenizer.hasTokens({ comma,identifier }));
+
+		//';'
+		if (!tokenizer.hasTokens(semicolon))
+		{
+			throw exception("expected ';'");
+		}
+		return true;
+	}
+
+	bool parseStatemantsAndGenerateCode()
+	{
+		return true;
 	}
 
 	static bool isType(EnumToken t)

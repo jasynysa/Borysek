@@ -29,27 +29,38 @@ public:
 		plikWyjsciowy << "\t <symbol> } </symbol>" << std::endl
 			<< "<\class>";
 	}
-	void classVariableDefinition(EnumToken type, string name)
+	void classVariableDefinition(const Token& type, string name)
 	{
 		plikWyjsciowy << tabulacja() + "<variable>" << endl
-						<< tabulacja() + "\t<type>" + tokenyNazwa[type] + "</type>"<<endl
+						<< tabulacja() + "\t<type>" + tokenyNazwa[type.token] + "</type>"<<endl
 						<< tabulacja() + "\t<name>" + name + "<name>" << endl
 						<< tabulacja() + "</variable>" << endl;
 
 	}
-	bool classSoubroutineDefinitionStart()
+	void classSoubroutineDefinitionStart(Token returnType, Token name)
 	{
-		return true;
+		plikWyjsciowy << tabulacja() + "<soubroutine definition>\n";
+		glebokosc++;
+		plikWyjsciowy << tabulacja() + "<return type>" + typeName(returnType) + "</return type>\n"
+			+ tabulacja() + "<name>" + name.value + "</name>\n";
+
+
 	}
-	bool classSoubroutineDefinitionEnd()
+	void classSoubroutineDefinitionEnd()
 	{
-		return true;
+		glebokosc--;
+		plikWyjsciowy << tabulacja() + "</soubroutine definition>\n";
 	}
 private:
 	ofstream plikWyjsciowy;
 	std::vector<std::string> tokenyNazwa{ "clasS", "constructor", "function", "method", "field", "statiC", "var", "inT", "chaR", "boolean", "voiD", "truE", "falsE", "nulL", "thiS", "leT", "dO", "iF", "elsE", "whilE", "returN", "curlyL", "curlyR", "roundL", "roundR", "squareL", "squareR", "dot", "comma", "semicolon", "plus", "minus", "star", "slash", "ampersand", "line", "angleL", "angleR", "equal", "tylda", "integerConstant", "stringConstant", "identifier" };
 int glebokosc = 0;//zmienna okreslajaca aktulana glebokosc w drzewie wyrazen 
 
+//funkcja zwraca nazwe typu (typ moze byc wbudowany, lub zdefiniowany przez uzytkownika)
+const string& typeName(const Token& t)
+{
+	return (t.token != identifier ? tokenyNazwa[t.token] : t.value);
+}
 	inline void otwarciePliku(string scierzkaWyjscia)
 	{
 		plikWyjsciowy.open(scierzkaWyjscia);

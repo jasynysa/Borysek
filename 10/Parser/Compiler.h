@@ -10,7 +10,7 @@ public:
 
 	Compiler(string sciezkaZrodla, string scierzkaWyjscia ):
 	tokenizer(sciezkaZrodla),
-		parserAndCodeGenerator(tokenizer, scierzkaWyjscia)
+	parserAndCodeGenerator(tokenizer, scierzkaWyjscia)
 	{}
 
 private:

@@ -60,7 +60,19 @@ public:
 		return czyPasuje;
 	}
 
-	//@vektorFunkcji- vektor z regolami ktore sa stosowane do kolejnych tokenow
+	bool hasTokens(bool (*f)(EnumToken))
+	{
+		if (itVectorTokenow < vectorTokenow.size())
+		{
+			if (f(vectorTokenow[itVectorTokenow].token))
+			{
+				itVectorTokenow++;
+				return true;
+			}
+		}
+		return false;
+	}
+	//@vektorFunkcji- vektor z regolami weglog ktorych kolejne tokeny sa sprawdzane
 	//funkcja zprawdza czy podana regula pasuje do aktualnego miejsca jezeli tak to przesowa wskaznik aktualnego miejsca i zrawca true
 	bool hasTokens(vector<bool (*)(EnumToken)>vektorFunkcji)
 	{
@@ -83,7 +95,7 @@ public:
 		return czyPasuje;
 	}
 	
-	string getValue(int ofset)
+	const string& getValue(int ofset)
 	{
 		int it = itVectorTokenow + ofset;
 		if (it < vectorTokenow.size() && it >= 0)
@@ -95,12 +107,12 @@ public:
 			throw exception("przesuniecie poza zakres");
 		}
 	}
-	EnumToken getToken(int ofset)
+	const Token& getToken(int ofset)
 	{
 		int it = itVectorTokenow + ofset;
 		if (it < vectorTokenow.size() && it >= 0)
 		{
-			return vectorTokenow[it].token;
+			return vectorTokenow[it];
 		}
 		else
 		{
