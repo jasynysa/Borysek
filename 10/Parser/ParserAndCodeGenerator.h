@@ -41,7 +41,7 @@ private:
 		if (tokenizer.hasTokens({ clasS,identifier,curlyL }))
 		{
 			//rozpoczecie definicji kalsy
-			codeGenerator.classDefinitionStart(tokenizer.getValue(-1));
+			codeGenerator.classDefinitionStart(tokenizer.getValue(-2));
 			//classVarDec*
 			while (parseClassVariableDefinitionAndGenerateCode()) {}
 			//subroutineDec*
@@ -105,10 +105,10 @@ private:
 		{
 			throw exception("wrong soubroutine definition");
 		}
-		//poczatek deklaracji Subrutyny------------------------
+		codeGenerator.classSoubroutineDefinitionStart(tokenizer.getToken(-2), tokenizer.getToken(-1));
 
 		//parameterList
-		if (!parseParamiterListAndGenerateCode())
+		if (!parseParameterListAndGenerateCode())
 		{
 			throw exception("parameter list expected");
 		}
@@ -117,26 +117,26 @@ private:
 		{
 			throw exception("sobroutine body expected");
 		}
-		//koniec dekalracji subrutyny---------------------------
+		codeGenerator.classSoubroutineDefinitionEnd();
 
 		return true;
 	}
 
 	//'(' ( type varName (',' type varName)* )? ')'
-	bool parseParamiterListAndGenerateCode()
+	bool parseParameterListAndGenerateCode()
 	{
 		// '(' type varName
 		if (!tokenizer.hasTokens(roundL))
 		{
 			return false;
 		}
-		//codeGenerator.paramiterListStart();----------------
+		codeGenerator.parameterListStart();
 
 		if (tokenizer.hasTokens(isType) && tokenizer.hasTokens(identifier))
 		{
 			do
 			{
-				//codeGenerator.paramiterDefinition();----------------
+				codeGenerator.parameterDefinition(tokenizer.getToken(-2), tokenizer.getToken(-1));
 
 			//(',' type varName)*
 			} while (tokenizer.hasTokens(comma) && tokenizer.hasTokens(isType) && tokenizer.hasTokens(identifier));
@@ -146,12 +146,12 @@ private:
 		{
 			throw exception("expected ')'");
 		}
-		//codeGenerator.paramiterListEnd();----------------------
+		codeGenerator.parameterListEnd();
 
 		return true;
 	}
 
-	//'{' varDec* statements? '}'
+	//'{' varDec* statement* '}'
 	bool parseSubroutineBodyAndGenerateCode()
 	{
 		//'{'
@@ -159,20 +159,20 @@ private:
 		{
 			return false;
 		}
-		//codeGenerator.subroutineBodyStart();
+		codeGenerator.subroutineBodyStart();
 
 		//varDec*
 		while (parseVariableDefinitionAndGenerateCode()) {}
 
-		//statements?
-		parseStatemantsAndGenerateCode();
+		//statement*
+		while (parseStatemantAndGenerateCode()) {}
 
 		//'}'
 		if (!tokenizer.hasTokens(curlyR))
 		{
 			throw exception("expected '}'");
 		}
-		//codeGenerator.subroutineBodyEnd();
+		codeGenerator.subroutineBodyEnd();
 
 		return true;
 	}
@@ -205,7 +205,136 @@ private:
 		return true;
 	}
 
-	bool parseStatemantsAndGenerateCode()
+	//letStatement | ifStatement | whileStatement |	doStatement | returnStatement
+	bool parseStatemantAndGenerateCode()
+	{
+		if (parseLetStatemantAndGenerateCode())
+		{
+			return true;
+		}
+		else if (parseIfStatemantAndGenerateCode())
+		{
+			return true;
+		}
+		else if (parseWhileStatemantAndGenerateCode())
+		{
+			return true;
+		}
+		else if (parseDoStatemantAndGenerateCode())
+		{
+			return true;
+		}
+		else if (parseReturnStatemantAndGenerateCode())
+		{
+			return true;
+		}
+		else
+		{
+			return false;
+		}
+	}
+
+	//'let' varName('[' expression ']') ? '=' expression ';'
+	bool parseLetStatemantAndGenerateCode()
+	{
+		codeGenerator.letStatemantStart();
+
+		// 'let'
+		if (!tokenizer.hasTokens(leT))
+		{
+			return false;
+		}
+		// varName
+		if (!tokenizer.hasTokens(identifier))
+		{
+			throw exception("wrong let statemant");
+		}
+
+		codeGenerator.letVariableStart(tokenizer.getToken(-1));
+
+		// ('[' expression ']') ?
+		if (tokenizer.hasTokens(squareL))
+		{
+			codeGenerator.letVariableIndexStart();
+
+			if (!parseExpressionAndGenerateCode())
+			{
+				throw exception("expretion required");
+			}
+			if (!tokenizer.hasTokens(squareR))
+			{
+				throw exception("expected ']'");
+			}
+			codeGenerator.letVariableIndexEnd();
+		}
+		codeGenerator.letVariableEnd();
+		//'='
+		if (!tokenizer.hasTokens(EnumToken::equal))
+		{
+			throw exception("expected '='");
+		}
+		// expression
+		if (!parseExpressionAndGenerateCode())
+		{
+			throw exception("expected expresion");
+		}
+		// ';'
+		if (!tokenizer.hasTokens(semicolon))
+		{
+			throw exception("expected ';'");
+		}
+		codeGenerator.letStatemantEnd();
+
+		return true;
+	}
+
+	bool parseIfStatemantAndGenerateCode()
+	{
+		return true;
+	}
+
+	bool parseWhileStatemantAndGenerateCode()
+	{
+		return true;
+	}
+
+	bool parseDoStatemantAndGenerateCode()
+	{
+		return true;
+	}
+
+	bool parseReturnStatemantAndGenerateCode()
+	{
+		return true;
+	}
+
+	//term (op term)*
+	bool parseExpressionAndGenerateCode()
+	{
+		//term
+		if (!parseTermAndGenerateCode())
+		{
+			return false;
+		}
+
+		//(op term)*
+		while (parseOpAndGenerateCode())
+		{
+			if (!parseTermAndGenerateCode())
+			{
+				throw exception("expected term");
+			}
+		}
+		return true;
+	}
+
+	bool parseTermAndGenerateCode()
+	{
+
+		return true;
+	}
+
+	bool parseOpAndGenerateCode()
 	{
 		return true;
 	}

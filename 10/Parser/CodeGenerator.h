@@ -17,10 +17,10 @@ public:
 
 	void classDefinitionStart(string identifier)
 	{
-		plikWyjsciowy << "<class>" << std::endl
-			<< "\t <keyword> class </keyword>" << std::endl
-			<< "\t <indentifier> " + identifier + "</identifier>" << std::endl
-			<< "\t <symbol> { </symbol>" << std::endl;
+		plikWyjsciowy <<"<class>" << std::endl
+			<< "\t<keyword> class </keyword>" << std::endl
+			<< "\t<indentifier> " + identifier + "</identifier>" << std::endl
+			<< "\t<symbol> { </symbol>" << std::endl;
 		glebokosc++;
 	}
 	void classDefinitionEnd()
@@ -32,16 +32,16 @@ public:
 	void classVariableDefinition(const Token& type, string name)
 	{
 		plikWyjsciowy << tabulacja() + "<variable>" << endl
-						<< tabulacja() + "\t<type>" + tokenyNazwa[type.token] + "</type>"<<endl
+						<< tabulacja() + "\t<type>" + typeName(type) + "</type>"<<endl
 						<< tabulacja() + "\t<name>" + name + "<name>" << endl
 						<< tabulacja() + "</variable>" << endl;
 
 	}
 	void classSoubroutineDefinitionStart(Token returnType, Token name)
 	{
-		plikWyjsciowy << tabulacja() + "<soubroutine definition>\n";
+		plikWyjsciowy << tabulacja() + "<soubroutineDefinition>\n";
 		glebokosc++;
-		plikWyjsciowy << tabulacja() + "<return type>" + typeName(returnType) + "</return type>\n"
+		plikWyjsciowy << tabulacja() + "<returnType>" + typeName(returnType) + "</returnType>\n"
 			+ tabulacja() + "<name>" + name.value + "</name>\n";
 
 
@@ -51,6 +51,106 @@ public:
 		glebokosc--;
 		plikWyjsciowy << tabulacja() + "</soubroutine definition>\n";
 	}
+	void parameterListStart()
+	{
+		plikWyjsciowy << tabulacja() + "<parameterList>\n";
+		glebokosc++;
+	}
+	void parameterDefinition(const Token& type, const Token& name)
+	{
+		plikWyjsciowy << tabulacja() + "<parameter>" << endl
+			<< tabulacja() + "\t<type>" + typeName(type) + "</type>" << endl
+			<< tabulacja() + "\t<name>" + name.value + "<name>" << endl
+			<< tabulacja() + "</parameter>" << endl;			
+	}
+	void parameterListEnd()
+	{
+		glebokosc--;
+		plikWyjsciowy << tabulacja() + "</paremetreList>\n";
+	}
+	void subroutineBodyStart()
+	{
+		plikWyjsciowy << tabulacja() + "<subroutineBody>\n";
+		glebokosc++;
+	}
+	void subroutineBodyEnd()
+	{
+		glebokosc--;
+		plikWyjsciowy << tabulacja() + "</subroutineBody>\n";
+	}
+	void letStatemantStart()
+	{
+		plikWyjsciowy << tabulacja() + "<letStatemant>\n";
+		glebokosc++;
+	}
+	void letStatemantEnd()
+	{
+		glebokosc--;
+		plikWyjsciowy << tabulacja() + "</letStatemant>\n";
+	}
+	void ifStatemantStart()
+	{
+		plikWyjsciowy << tabulacja() + "<ifStatemant>\n";
+		glebokosc++;
+	}
+	void ifStatemantEnd()
+	{
+		glebokosc--;
+		plikWyjsciowy << tabulacja() + "</ifStatemant>\n";
+	}
+	void whileStatemantStart()
+	{
+		plikWyjsciowy << tabulacja() + "<whielStatemant>\n";
+		glebokosc++;
+	}
+	void whileStatemantEnd()
+	{
+		glebokosc--;
+		plikWyjsciowy << tabulacja() + "</whileStatemant>\n";
+	}
+	void doStatemantStart()
+	{
+		plikWyjsciowy << tabulacja() + "<doStatemant>\n";
+		glebokosc++;
+
+	}
+	void doStatemantEnd()
+	{
+		glebokosc--;
+		plikWyjsciowy << tabulacja() + "</doStatemant>\n";
+	}
+	void returnStatemantStart()
+	{
+		plikWyjsciowy << tabulacja() + "<returnStatemant>\n";
+		glebokosc++;
+	}
+	void returnStatemantEnd()
+	{
+		glebokosc--;
+		plikWyjsciowy << tabulacja() + "</returnStatemant>\n";
+	}
+	void letVariableStart(Token var)
+	{
+		plikWyjsciowy << tabulacja() + "<letVariable>\n";
+		glebokosc++;
+		plikWyjsciowy << tabulacja() + "<name>" + var.value + "</name>\n";
+	}
+	void letVariableEnd()
+	{
+		glebokosc--;
+		plikWyjsciowy << tabulacja() + "</letVariable>\n";
+	}
+	void letVariableIndexStart()
+	{
+		plikWyjsciowy << tabulacja() + "<Index>\n";
+		glebokosc++;
+	}
+	void letVariableIndexEnd()
+	{
+		glebokosc--;
+		plikWyjsciowy << tabulacja() + "</Index>\n";
+	}
+
 private:
 	ofstream plikWyjsciowy;
 	std::vector<std::string> tokenyNazwa{ "clasS", "constructor", "function", "method", "field", "statiC", "var", "inT", "chaR", "boolean", "voiD", "truE", "falsE", "nulL", "thiS", "leT", "dO", "iF", "elsE", "whilE", "returN", "curlyL", "curlyR", "roundL", "roundR", "squareL", "squareR", "dot", "comma", "semicolon", "plus", "minus", "star", "slash", "ampersand", "line", "angleL", "angleR", "equal", "tylda", "integerConstant", "stringConstant", "identifier" };

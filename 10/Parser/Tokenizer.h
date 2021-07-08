@@ -107,6 +107,8 @@ public:
 			throw exception("przesuniecie poza zakres");
 		}
 	}
+	//return token pointed by (((actual token) pointer) moved by (given ofset))
+	//@ofset- value witch modifi pointer to token to return 
 	const Token& getToken(int ofset)
 	{
 		int it = itVectorTokenow + ofset;
