@@ -31,10 +31,10 @@ public:
 	}
 	void classVariableDefinition(const Token& type, string name)
 	{
-		plikWyjsciowy << tabulacja() + "<variable>" << endl
+		plikWyjsciowy << tabulacja() + "<variableDefinition>" << endl
 						<< tabulacja() + "\t<type>" + typeName(type) + "</type>"<<endl
 						<< tabulacja() + "\t<name>" + name + "<name>" << endl
-						<< tabulacja() + "</variable>" << endl;
+						<< tabulacja() + "</variableDefinition>" << endl;
 
 	}
 	void classSoubroutineDefinitionStart(Token returnType, Token name)
@@ -129,7 +129,7 @@ public:
 		glebokosc--;
 		plikWyjsciowy << tabulacja() + "</returnStatemant>\n";
 	}
-	void letVariableStart(Token var)
+	void letVariableStart(const Token& var)
 	{
 		plikWyjsciowy << tabulacja() + "<letVariable>\n";
 		glebokosc++;
@@ -142,13 +142,77 @@ public:
 	}
 	void letVariableIndexStart()
 	{
-		plikWyjsciowy << tabulacja() + "<Index>\n";
+		plikWyjsciowy << tabulacja() + "<index>\n";
 		glebokosc++;
 	}
 	void letVariableIndexEnd()
 	{
 		glebokosc--;
-		plikWyjsciowy << tabulacja() + "</Index>\n";
+		plikWyjsciowy << tabulacja() + "</index>\n";
+	}
+	void expretionStart()
+	{
+		plikWyjsciowy << tabulacja() + "<expretion>\n";
+		glebokosc++;
+	}
+	void expretionEnd()
+	{
+		glebokosc--;
+		plikWyjsciowy << tabulacja() + "</expretion>\n";
+	}
+	void operatoR(const Token& op)
+	{
+		plikWyjsciowy << tabulacja() + "<operator>" + tokenyNazwa[op.token] + "</operator>\n";
+	}
+	void unaryOperator(const Token& op)
+	{
+		plikWyjsciowy << tabulacja() + "<unaryOperator>" + tokenyNazwa[op.token] + "</unaryOperator>\n";
+	}
+	void constant(const Token& constant)
+	{
+		plikWyjsciowy << tabulacja() + "<"+tokenyNazwa[constant.token]+">\n"
+			+ tabulacja() + "\t<value>" + constant.value + "</value>\n" 
+			"</" + tokenyNazwa[constant.token] + ">\n";
+	}
+	void keywordConstant(const Token& keyword)
+	{
+		plikWyjsciowy << tabulacja() + "<keywordConstant>" + tokenyNazwa[keyword.token]+"</keywordConstant>\n";
+	}
+	void arrayStart(const Token& arraY )
+	{
+
+	}
+	void arrayEnd()
+	{
+
+	}
+	void variabel()
+	{
+
+	}
+	void subroutineCallStart()
+	{
+
+	}
+	void subroutineCallEnd()
+	{
+
+	}
+	void soubroutineName(const Token& name)
+	{
+
+	}
+	void soubroutineClassName(const Token& className, const Token& subroutiNename)
+	{
+
+	}
+	void expressionListStart()
+	{
+
+	}
+	void expressionListEnd()
+	{
+
 	}
 
 private:

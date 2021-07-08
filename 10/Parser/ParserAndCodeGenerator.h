@@ -64,12 +64,12 @@ private:
 	bool parseClassVariableDefinitionAndGenerateCode()
 	{
 		//('static' | 'field')
-		if (!tokenizer.hasTokens([](EnumToken t) {return t == statiC || t == field ? true : false; }))
+		if (!tokenizer.hasTokens([](EnumToken t) {return t == statiC || t == field; }))
 		{
 			return false;
 		}
 		//type varName
-		else if (tokenizer.hasTokens({ isType,[](EnumToken t) {return t == identifier ? true : false; } }))
+		else if (tokenizer.hasTokens({ isType,[](EnumToken t) {return t == identifier; } }))
 		{
 			Token typ = tokenizer.getToken(-2);
 			//(',' varName)*
@@ -311,6 +311,7 @@ private:
 	//term (op term)*
 	bool parseExpressionAndGenerateCode()
 	{
+		codeGenerator.expretionStart();
 		//term
 		if (!parseTermAndGenerateCode())
 		{
@@ -325,17 +326,143 @@ private:
 				throw exception("expected term");
 			}
 		}
+		codeGenerator.expretionEnd();
 		return true;
 	}
-
+	// integerConstant | stringConstant | keywordConstant |	
+	// varName | varName '[' expression ']' | subroutineCall |
+	//	'(' expression ')' | unaryOp term
 	bool parseTermAndGenerateCode()
 	{
+		// integerConstant | stringConstant
+		if (tokenizer.hasTokens({ integerConstant,stringConstant }))
+		{
+			codeGenerator.constant(tokenizer.getToken(-1));
+			return true;
+		}
+		// keywordConstant -> 'true'|'false'|'null'|'this'
+		else if (tokenizer.hasTokens({ truE,falsE,nulL,thiS }))
+		{
+			codeGenerator.keywordConstant(tokenizer.getToken(-1));
+			return true;
+		}
+		//varName '[' expression ']'
+		else if (tokenizer.hasTokens({ identifier, squareL }))
+		{
+			codeGenerator.arrayStart(tokenizer.getToken(-2));
 
-		return true;
+			if (!parseExpressionAndGenerateCode())
+			{
+				throw exception("expected expression");
+			}
+			if (!tokenizer.hasTokens(squareR))
+			{
+				throw exception("expected ']'");
+			}
+			codeGenerator.arrayEnd();
+			return true;
+		}
+		//varName 
+		else if (tokenizer.hasTokens(identifier))
+		{
+			codeGenerator.variabel();
+			return true;
+		}
+		// subroutineCall
+		else if (parseSubroutineCallAndGenerateCode())
+		{
+			return true;
+		}
+		// '(' expression ')'
+		else if (tokenizer.hasTokens(roundL))
+		{
+			if (!parseExpressionAndGenerateCode())
+			{
+				throw exception("expected expression");
+			}
+			if (!tokenizer.hasTokens(roundL))
+			{
+				throw exception("expected ')'");
+			}
+			return true;
+		}
+		//unaryOp term 
+		//unaryOp-> '-' | '~'
+		else if (tokenizer.hasTokens({ EnumToken::minus,tylda }))
+		{
+			codeGenerator.unaryOperator(tokenizer.getToken(-1));
+			if (!parseTermAndGenerateCode())
+			{
+				throw exception("expected term");
+			}
+			return true;
+		}
+		else
+		{
+			return false;
+		}
 	}
-
+	//'+'|'-'|'*'|'/'|'&'|'|'|'<'|'>'|'='
 	bool parseOpAndGenerateCode()
 	{
+		if (tokenizer.hasTokens([](EnumToken t) {return (t == EnumToken::plus || t == EnumToken::minus || t == star || t == slash || t == ampersand || t == line || t == angleL || t == angleR || t == EnumToken::equal); }))
+		{
+			codeGenerator.operatoR(tokenizer.getToken(-1));
+		}
+		return true;
+	}
+	// subroutineName '(' expressionList ')' | 
+	// (className |varName) '.' subroutineName '(' expressionList ')'
+	bool parseSubroutineCallAndGenerateCode()
+	{
+		codeGenerator.subroutineCallStart();
+		// subroutineName '('		//this combinationa of tokens clearly express subrutine call
+		if (tokenizer.hasTokens({ identifier,roundL }))
+		{
+			codeGenerator.soubroutineName(tokenizer.getToken(-2));
+			// expressionList 
+			if (!parseExpressionListAndGenerateCode())
+			{
+				throw exception("expected expresion list");
+			}
+			//')'
+			if (!tokenizer.hasTokens(roundL))
+			{
+				throw exception("expected ')'");
+			}
+			return true;
+		}
+		//(className |varName) '.' subroutineName '(' expressionList ')' //this combinationa of tokens clearly express subrutine call
+		else if (tokenizer.hasTokens({ identifier, dot,identifier,roundL }))
+		{
+			codeGenerator.soubroutineClassName(tokenizer.getToken(-4), tokenizer.getToken(-2));
+			// expressionList
+			if (!parseExpressionListAndGenerateCode())
+			{
+				throw exception("expected expresion list");
+			}
+			//')'
+			if (!tokenizer.hasTokens(roundL))
+			{
+				throw exception("expected ')'");
+			}
+			return true;
+		}
+		codeGenerator.subroutineCallEnd();
+		return true;
+	}
+	// (expression (',' expression)* )?
+	bool parseExpressionListAndGenerateCode()
+	{
+		codeGenerator.expressionListStart();
+		if (parseExpressionAndGenerateCode())
+		{
+			while (tokenizer.hasTokens(comma))
+			{
+				parseExpressionAndGenerateCode();
+			}
+		}
+		codeGenerator.expressionListEnd();
 		return true;
 	}
 
