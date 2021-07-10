@@ -10,38 +10,62 @@ class CodeGenerator
 public:
 	CodeGenerator(string scierzkazWyjscia)
 	{
-			otwarciePliku(scierzkazWyjscia);
-		
-		
+		otwarciePliku(scierzkazWyjscia);
+
+
+	}
+
+	struct codeGeneratorState
+	{
+		string::iterator it;
+		int glebokosc;
+	};
+	//save actual state of code 
+	codeGeneratorState save()
+	{
+		codeGeneratorState cgs;
+		cgs.glebokosc = glebokosc;
+		cgs.it = code.end();
+		return cgs;
+	}
+	//restore state of code from moment of call save function
+	void restore(codeGeneratorState state)
+	{
+		code.erase(state.it, code.end());
+		glebokosc = state.glebokosc;
+	}
+	void wirteToFile()
+	{
+		plikWyjsciowy << code;
 	}
 
 	void classDefinitionStart(string identifier)
 	{
-		plikWyjsciowy <<"<class>" << std::endl
-			<< "\t<keyword> class </keyword>" << std::endl
-			<< "\t<indentifier> " + identifier + "</identifier>" << std::endl
-			<< "\t<symbol> { </symbol>" << std::endl;
+		code += "<class>\n";
+		 + "\t<keyword> class </keyword>\n";
+		 + "\t<indentifier> " + identifier + "</identifier\n>";
+		 + "\t<symbol> { </symbol\n>" ;
 		glebokosc++;
 	}
 	void classDefinitionEnd()
 	{
 		glebokosc--;
-		plikWyjsciowy << "\t <symbol> } </symbol>" << std::endl
-			<< "<\class>";
+		code += "\t <symbol> } </symbol>\n";
+		 + "<\class>\n";
 	}
 	void classVariableDefinition(const Token& type, string name)
 	{
-		plikWyjsciowy << tabulacja() + "<variableDefinition>" << endl
-						<< tabulacja() + "\t<type>" + typeName(type) + "</type>"<<endl
-						<< tabulacja() + "\t<name>" + name + "<name>" << endl
-						<< tabulacja() + "</variableDefinition>" << endl;
+		code += tabulacja() + "<variableDefinition>\n"
+			+ tabulacja() + "\t<type>" + typeName(type) + "</type>\n"
+			+ tabulacja() + "\t<name>" + name + "<name>\n"
+			+ tabulacja() + "</variableDefinition>\n";
 
 	}
 	void classSoubroutineDefinitionStart(Token returnType, Token name)
 	{
-		plikWyjsciowy << tabulacja() + "<soubroutineDefinition>\n";
+		code += tabulacja() + "<soubroutineDefinition>\n";
 		glebokosc++;
-		plikWyjsciowy << tabulacja() + "<returnType>" + typeName(returnType) + "</returnType>\n"
+		code += tabulacja() + "<returnType>" + typeName(returnType) + "</returnType>\n"
 			+ tabulacja() + "<name>" + name.value + "</name>\n";
 
 
@@ -49,136 +73,136 @@ public:
 	void classSoubroutineDefinitionEnd()
 	{
 		glebokosc--;
-		plikWyjsciowy << tabulacja() + "</soubroutine definition>\n";
+		code += tabulacja() + "</soubroutine definition>\n";
 	}
 	void parameterListStart()
 	{
-		plikWyjsciowy << tabulacja() + "<parameterList>\n";
+		code += tabulacja() + "<parameterList>\n";
 		glebokosc++;
 	}
 	void parameterDefinition(const Token& type, const Token& name)
 	{
-		plikWyjsciowy << tabulacja() + "<parameter>" << endl
-			<< tabulacja() + "\t<type>" + typeName(type) + "</type>" << endl
-			<< tabulacja() + "\t<name>" + name.value + "<name>" << endl
-			<< tabulacja() + "</parameter>" << endl;			
+		code += tabulacja() + "<parameter>\n"
+			+ tabulacja() + "\t<type>" + typeName(type) + "</type>\n"
+			+ tabulacja() + "\t<name>" + name.value + "<name>\n"
+			+ tabulacja() + "</parameter>\n";
 	}
 	void parameterListEnd()
 	{
 		glebokosc--;
-		plikWyjsciowy << tabulacja() + "</paremetreList>\n";
+		code += tabulacja() + "</paremetreList>\n";
 	}
 	void subroutineBodyStart()
 	{
-		plikWyjsciowy << tabulacja() + "<subroutineBody>\n";
+		code += tabulacja() + "<subroutineBody>\n";
 		glebokosc++;
 	}
 	void subroutineBodyEnd()
 	{
 		glebokosc--;
-		plikWyjsciowy << tabulacja() + "</subroutineBody>\n";
+		code += tabulacja() + "</subroutineBody>\n";
 	}
 	void letStatemantStart()
 	{
-		plikWyjsciowy << tabulacja() + "<letStatemant>\n";
+		code += tabulacja() + "<letStatemant>\n";
 		glebokosc++;
 	}
 	void letStatemantEnd()
 	{
 		glebokosc--;
-		plikWyjsciowy << tabulacja() + "</letStatemant>\n";
+		code += tabulacja() + "</letStatemant>\n";
 	}
 	void ifStatemantStart()
 	{
-		plikWyjsciowy << tabulacja() + "<ifStatemant>\n";
+		code += tabulacja() + "<ifStatemant>\n";
 		glebokosc++;
 	}
 	void ifStatemantEnd()
 	{
 		glebokosc--;
-		plikWyjsciowy << tabulacja() + "</ifStatemant>\n";
+		code += tabulacja() + "</ifStatemant>\n";
 	}
 	void whileStatemantStart()
 	{
-		plikWyjsciowy << tabulacja() + "<whielStatemant>\n";
+		code += tabulacja() + "<whielStatemant>\n";
 		glebokosc++;
 	}
 	void whileStatemantEnd()
 	{
 		glebokosc--;
-		plikWyjsciowy << tabulacja() + "</whileStatemant>\n";
+		code += tabulacja() + "</whileStatemant>\n";
 	}
 	void doStatemantStart()
 	{
-		plikWyjsciowy << tabulacja() + "<doStatemant>\n";
+		code += tabulacja() + "<doStatemant>\n";
 		glebokosc++;
 
 	}
 	void doStatemantEnd()
 	{
 		glebokosc--;
-		plikWyjsciowy << tabulacja() + "</doStatemant>\n";
+		code += tabulacja() + "</doStatemant>\n";
 	}
 	void returnStatemantStart()
 	{
-		plikWyjsciowy << tabulacja() + "<returnStatemant>\n";
+		code += tabulacja() + "<returnStatemant>\n";
 		glebokosc++;
 	}
 	void returnStatemantEnd()
 	{
 		glebokosc--;
-		plikWyjsciowy << tabulacja() + "</returnStatemant>\n";
+		code += tabulacja() + "</returnStatemant>\n";
 	}
 	void letVariableStart(const Token& var)
 	{
-		plikWyjsciowy << tabulacja() + "<letVariable>\n";
+		code += tabulacja() + "<letVariable>\n";
 		glebokosc++;
-		plikWyjsciowy << tabulacja() + "<name>" + var.value + "</name>\n";
+		code += tabulacja() + "<name>" + var.value + "</name>\n";
 	}
 	void letVariableEnd()
 	{
 		glebokosc--;
-		plikWyjsciowy << tabulacja() + "</letVariable>\n";
+		code += tabulacja() + "</letVariable>\n";
 	}
 	void letVariableIndexStart()
 	{
-		plikWyjsciowy << tabulacja() + "<index>\n";
+		code += tabulacja() + "<index>\n";
 		glebokosc++;
 	}
 	void letVariableIndexEnd()
 	{
 		glebokosc--;
-		plikWyjsciowy << tabulacja() + "</index>\n";
+		code += tabulacja() + "</index>\n";
 	}
 	void expretionStart()
 	{
-		plikWyjsciowy << tabulacja() + "<expretion>\n";
+		code += tabulacja() + "<expretion>\n";
 		glebokosc++;
 	}
 	void expretionEnd()
 	{
 		glebokosc--;
-		plikWyjsciowy << tabulacja() + "</expretion>\n";
+		code += tabulacja() + "</expretion>\n";
 	}
 	void operatoR(const Token& op)
 	{
-		plikWyjsciowy << tabulacja() + "<operator>" + tokenyNazwa[op.token] + "</operator>\n";
+		code += tabulacja() + "<operator>" + tokenyNazwa[op.token] + "</operator>\n";
 	}
 	void unaryOperator(const Token& op)
 	{
-		plikWyjsciowy << tabulacja() + "<unaryOperator>" + tokenyNazwa[op.token] + "</unaryOperator>\n";
+		code += tabulacja() + "<unaryOperator>" + tokenyNazwa[op.token] + "</unaryOperator>\n";
 	}
 	void constant(const Token& constant)
 	{
-		plikWyjsciowy << tabulacja() + "<"+tokenyNazwa[constant.token]+">\n"
-			+ tabulacja() + "\t<value>" + constant.value + "</value>\n" 
+		code += tabulacja() + "<" + tokenyNazwa[constant.token] + ">\n"
+			+ tabulacja() + "\t<value>" + constant.value + "</value>\n"
 			"</" + tokenyNazwa[constant.token] + ">\n";
 	}
 	void keywordConstant(const Token& keyword)
 	{
-		plikWyjsciowy << tabulacja() + "<keywordConstant>" + tokenyNazwa[keyword.token]+"</keywordConstant>\n";
+		code += tabulacja() + "<keywordConstant>" + tokenyNazwa[keyword.token] + "</keywordConstant>\n";
 	}
-	void arrayStart(const Token& arraY )
+	void arrayStart(const Token& arraY)
 	{
 
 	}
@@ -216,15 +240,16 @@ public:
 	}
 
 private:
+	string code;
 	ofstream plikWyjsciowy;
 	std::vector<std::string> tokenyNazwa{ "clasS", "constructor", "function", "method", "field", "statiC", "var", "inT", "chaR", "boolean", "voiD", "truE", "falsE", "nulL", "thiS", "leT", "dO", "iF", "elsE", "whilE", "returN", "curlyL", "curlyR", "roundL", "roundR", "squareL", "squareR", "dot", "comma", "semicolon", "plus", "minus", "star", "slash", "ampersand", "line", "angleL", "angleR", "equal", "tylda", "integerConstant", "stringConstant", "identifier" };
-int glebokosc = 0;//zmienna okreslajaca aktulana glebokosc w drzewie wyrazen 
+	int glebokosc = 0;//zmienna okreslajaca aktulana glebokosc w drzewie wyrazen 
 
-//funkcja zwraca nazwe typu (typ moze byc wbudowany, lub zdefiniowany przez uzytkownika)
-const string& typeName(const Token& t)
-{
-	return (t.token != identifier ? tokenyNazwa[t.token] : t.value);
-}
+	//funkcja zwraca nazwe typu (typ moze byc wbudowany, lub zdefiniowany przez uzytkownika)
+	const string& typeName(const Token& t)
+	{
+		return (t.token != identifier ? tokenyNazwa[t.token] : t.value);
+	}
 	inline void otwarciePliku(string scierzkaWyjscia)
 	{
 		plikWyjsciowy.open(scierzkaWyjscia);
@@ -242,6 +267,6 @@ const string& typeName(const Token& t)
 		}
 		return t;
 	}
-	
+
 };
 

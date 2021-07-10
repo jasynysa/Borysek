@@ -11,6 +11,7 @@ typedef void(Tokenizer::* FPointer)();
 class Tokenizer
 {
 public:
+	using tokenizerState = int;
 	Tokenizer(string adresZrodlo)
 	{		
 		try
@@ -25,7 +26,7 @@ public:
 		}
 		
 	}
-	bool hasTokens(EnumToken t)
+	bool isItHasTokens(EnumToken t)
 	{
 		if (itVectorTokenow < vectorTokenow.size())
 		{
@@ -39,7 +40,7 @@ public:
 	}
 	//@szukaneTokeny- ciag szukanych tokenow
 		//jezlei w aktualnej pozycji znajduja sie kolejno szukane tokeny to zwaraca true 
-	bool hasTokens(vector<EnumToken> szukaneTokeny)
+	bool isItHasTokens(vector<EnumToken> szukaneTokeny)
 	{
 		bool czyPasuje = false;
 		if (itVectorTokenow + szukaneTokeny.size() - 1 < vectorTokenow.size())
@@ -60,7 +61,7 @@ public:
 		return czyPasuje;
 	}
 
-	bool hasTokens(bool (*f)(EnumToken))
+	bool isItHasTokens(bool (*f)(EnumToken))
 	{
 		if (itVectorTokenow < vectorTokenow.size())
 		{
@@ -74,7 +75,7 @@ public:
 	}
 	//@vektorFunkcji- vektor z regolami weglog ktorych kolejne tokeny sa sprawdzane
 	//funkcja zprawdza czy podana regula pasuje do aktualnego miejsca jezeli tak to przesowa wskaznik aktualnego miejsca i zrawca true
-	bool hasTokens(vector<bool (*)(EnumToken)>vektorFunkcji)
+	bool isItHasTokens(vector<bool (*)(EnumToken)>vektorFunkcji)
 	{
 		bool czyPasuje = false;
 		if (itVectorTokenow + vektorFunkcji.size() - 1 < vectorTokenow.size())
@@ -122,13 +123,24 @@ public:
 		}
 	}
 
+	//save iterator of actual token
+	tokenizerState save()
+	{
+		return itVectorTokenow;
+	}
+
+	void restore(tokenizerState state)
+	{
+		itVectorTokenow =state;
+	}
+
 
 private:
 	std::ifstream plikHack;
 	std::vector<Token> vectorTokenow;
 	std::map<std::string, FPointer> mapaTokenowIFunkcji;
 	int itVectorTokenow = 0;
-
+	int itVectorTokenowSave;
 
 
 	inline void otwarciePliku(string scierzkaPlikHack)
