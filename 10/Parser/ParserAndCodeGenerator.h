@@ -286,24 +286,125 @@ private:
 
 		return true;
 	}
-
-	bool parseIfStatemantAndGenerateCode()
+	//'if' '(' expression ')' '{' statements '}'
+	//('else' '{' statements '}') ?
+	bool parseIfStatemantAndGenerateCode() //another style of 'if' structure
 	{
+		if (tokenizer.isItHasTokens(iF))
+		{
+			codeGenerator.ifStatemantStart();
+			if (!tokenizer.isItHasTokens(roundL))
+			{
+				throw exception("expected '('");
+			}
+			if (!parseExpressionAndGenerateCode())
+			{
+				throw exception("expected expression");
+			}
+			if (!tokenizer.isItHasTokens(roundR))
+			{
+				throw exception("expected ')'");
+			}
+			if (!tokenizer.isItHasTokens(curlyL))
+			{
+				throw exception("expected '{'");
+			}
+			if (!parseStatemantAndGenerateCode())
+			{
+				throw exception("expected statemant");
+			}
+			if (!tokenizer.isItHasTokens(curlyR))
+			{
+				throw exception("expected '}'");
+			}
+			if (tokenizer.isItHasTokens(elsE))
+			{
+				if (!tokenizer.isItHasTokens(curlyL))
+				{
+					throw exception("expected '{'");
+				}
+				if (!parseStatemantAndGenerateCode())
+				{
+					throw exception("expected statemant");
+				}
+				if (!tokenizer.isItHasTokens(curlyR))
+				{
+					throw exception("expected '}'");
+				}
+			}
+			codeGenerator.ifStatemantEnd();
+			return true;
+		}
 		return false;
 	}
-
+	// 'while' '(' expression ')' '{' statements '}'
 	bool parseWhileStatemantAndGenerateCode()
 	{
+		if (tokenizer.isItHasTokens(whilE))
+		{
+			codeGenerator.whileStatemantStart();
+			if (!tokenizer.isItHasTokens(roundL))
+			{
+				throw exception("expected '('");
+			}
+			if (!parseExpressionAndGenerateCode())
+			{
+				throw exception("expected expression");
+			}
+			if (!tokenizer.isItHasTokens(roundR))
+			{
+				throw exception("expected ')'");
+			}
+			if (!tokenizer.isItHasTokens(curlyL))
+			{
+				throw exception("expected '{'");
+			}
+			if (!parseStatemantAndGenerateCode())
+			{
+				throw exception("expected statemant");
+			}
+			if (!tokenizer.isItHasTokens(curlyR))
+			{
+				throw exception("expected '}'");
+			}
+			codeGenerator.whileStatemantEnd();
+			return true;
+		}
 		return false;
 	}
-
+	// 'do' subroutineCall ';'
 	bool parseDoStatemantAndGenerateCode()
 	{
+		if (tokenizer.isItHasTokens(dO))
+		{
+			codeGenerator.doStatemantStart();
+			if (!parseSubroutineCallAndGenerateCode())
+			{
+				throw exception("expected subroutineCall");
+			}
+			if (!tokenizer.isItHasTokens(semicolon))
+			{
+				throw exception("expected ';'");
+			}
+			codeGenerator.doStatemantEnd();
+			return true;
+		}
 		return false;
 	}
-
+	// 'return' expression? ';'
 	bool parseReturnStatemantAndGenerateCode()
 	{
+		if (tokenizer.isItHasTokens(returN))
+		{
+			codeGenerator.returnStatemantStart();
+			parseExpressionAndGenerateCode();
+			if (!tokenizer.isItHasTokens(semicolon))
+			{
+				throw exception("expected ';'");
+			}
+			codeGenerator.returnStatemantEnd();
+			return true;
+		}
 		return false;
 	}
 
@@ -312,14 +413,15 @@ private:
 	{	
 		//saving state of CG prewent from incorect code generating during parsing proces which in the end ocure incorect
 		//saving state of tokenizer alowe to restor palce where parsing prooces begun
-		auto codeGeneratorState = codeGenerator.save(); 
-		auto tokenizerState = tokenizer.save();
+		//auto codeGeneratorState = codeGenerator.save(); 
+		//auto tokenizerState = tokenizer.save();
 		codeGenerator.expretionStart();	
 		//term
 		if (!parseTermAndGenerateCode())
 		{
-			codeGenerator.restore(codeGeneratorState);
-			tokenizer.restore(tokenizerState);
+			//codeGenerator.restore(codeGeneratorState);
+			//tokenizer.restore(tokenizerState);
+			codeGenerator.expretionEnd();
 			return false;
 		}
 
@@ -340,13 +442,13 @@ private:
 	bool parseTermAndGenerateCode()
 	{
 		// integerConstant | stringConstant
-		if (tokenizer.isItHasTokens({ integerConstant,stringConstant }))
+		if (tokenizer.isItHasTokens([](EnumToken t){return t==integerConstant||t==stringConstant; }))
 		{
 			codeGenerator.constant(tokenizer.getToken(-1));
 			return true;
 		}
 		// keywordConstant -> 'true'|'false'|'null'|'this'
-		else if (tokenizer.isItHasTokens({ truE,falsE,nulL,thiS }))
+		else if (tokenizer.isItHasTokens([](EnumToken t){return  t==truE||t==falsE||t==nulL||t==thiS; }))
 		{
 			codeGenerator.keywordConstant(tokenizer.getToken(-1));
 			return true;

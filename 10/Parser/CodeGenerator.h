@@ -50,8 +50,8 @@ public:
 	void classDefinitionEnd()
 	{
 		glebokosc--;
-		code += "\t <symbol> } </symbol>\n";
-		 + "<\class>\n";
+		code += "\t <symbol> } </symbol>\n"
+		 "<\class>\n";
 	}
 	void classVariableDefinition(const Token& type, string name)
 	{
@@ -196,7 +196,7 @@ public:
 	{
 		code += tabulacja() + "<" + tokenyNazwa[constant.token] + ">\n"
 			+ tabulacja() + "\t<value>" + constant.value + "</value>\n"
-			"</" + tokenyNazwa[constant.token] + ">\n";
+			+tabulacja()+"</" + tokenyNazwa[constant.token] + ">\n";
 	}
 	void keywordConstant(const Token& keyword)
 	{

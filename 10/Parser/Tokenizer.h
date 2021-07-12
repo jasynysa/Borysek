@@ -169,14 +169,14 @@ private:
 		//wydobywanie slowa 		
 		for (int i = 0; i < length; i++)
 		{
-			if ((kod[i] >= 'A' && kod[i] <= 'z') || kod[i] == '_')//slowo kluczowe lub identyfikator
+			if ((kod[i] >= 'A' && kod[i] <= 'Z') || (kod[i] >= 'a' && kod[i] <= 'z') || kod[i] == '_')//slowo kluczowe lub identyfikator
 			{
 				//rozpoczynam odczyt slowa
 				do
 				{
 					slowo += kod[i];
 					i++;
-				} while ((kod[i] >= '0' && kod[i] <= 9) || (kod[i] >= 'A' && kod[i] <= 'z') || kod[i] == '_');//dopoki kod[i] jests litera lub liczba lub znakiem '_'
+				} while ((kod[i] >= '0' && kod[i] <=  '9') || (kod[i] >= 'A' && kod[i] <= 'Z') || (kod[i] >= 'a' && kod[i] <= 'z') || kod[i] == '_');//dopoki kod[i] jests litera lub liczba lub znakiem '_'
 				i--;
 
 				auto it = mapaTokenowIFunkcji.find(slowo);
