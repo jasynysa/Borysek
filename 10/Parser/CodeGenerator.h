@@ -50,8 +50,7 @@ public:
 	void classDefinitionEnd()
 	{
 		glebokosc--;
-		code += "\t <symbol> } </symbol>\n"
-		 "<\class>\n";
+		code += "<\class>\n";
 	}
 	void classVariableDefinition(const Token& type, string name)
 	{
@@ -73,7 +72,7 @@ public:
 	void classSoubroutineDefinitionEnd()
 	{
 		glebokosc--;
-		code += tabulacja() + "</soubroutine definition>\n";
+		code += tabulacja() + "</soubroutineDefinition>\n";
 	}
 	void parameterListStart()
 	{
@@ -204,39 +203,56 @@ public:
 	}
 	void arrayStart(const Token& arraY)
 	{
-
+		code += tabulacja() + "<array>\n";
+		glebokosc++;
+		code += tabulacja() + "<name>"+arraY.value+"</name>\n";
 	}
 	void arrayEnd()
 	{
-
+		glebokosc--;
+		code += tabulacja() + "</array>\n";
 	}
-	void variabel()
+	void variabel(const Token& name)
 	{
-
+		code += tabulacja() + "<variable>\n"
+			+ tabulacja() + "\t<name>" + name.value + "<name>\n"
+			+ tabulacja() + "</variable>\n";
 	}
 	void subroutineCallStart()
 	{
-
+		code += tabulacja() + "<subrutineCall>\n";
+		glebokosc++;
 	}
 	void subroutineCallEnd()
 	{
-
+		glebokosc--;
+		code += tabulacja() + "</subrutineCall>\n";
 	}
 	void soubroutineName(const Token& name)
 	{
-
+		code +=tabulacja() + "<subrutineName>" + name.value + "<subrutineName>\n";
 	}
-	void soubroutineClassName(const Token& className, const Token& subroutiNename)
+	void soubroutineClassName(const Token& className, const Token& subroutineName)
 	{
-
+		code += tabulacja() + "<className>"+className.value + "</className>\n"
+			+ tabulacja() + "<subrutineName>" + subroutineName.value + "<subrutineName>\n";
 	}
 	void expressionListStart()
 	{
-
+		code += tabulacja() + "<arguments>\n";
+		glebokosc++;
 	}
 	void expressionListEnd()
 	{
-
+		glebokosc--;
+		code += tabulacja() + "</arguments>\n";
+	}
+	void subrutineVariableDefinition(const Token& type, const Token& name)
+	{
+		code += tabulacja() + "<variableDefinition>\n"
+			+ tabulacja() + "\t<type>" + typeName(type) + "</type>\n"
+			+ tabulacja() + "\t<name>" + name.value + "<name>\n"
+			+ tabulacja() + "</variableDefinition>\n";
 	}
 
 private:

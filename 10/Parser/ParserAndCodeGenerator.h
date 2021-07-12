@@ -192,7 +192,7 @@ private:
 		}
 		do
 		{
-			//codeGenerator.variableDefinition();
+			codeGenerator.subrutineVariableDefinition(tokenizer.getToken(-2), tokenizer.getToken(-1));
 
 			//(',' varName)*
 		} while (tokenizer.isItHasTokens({ comma,identifier }));
@@ -413,15 +413,14 @@ private:
 	{	
 		//saving state of CG prewent from incorect code generating during parsing proces which in the end ocure incorect
 		//saving state of tokenizer alowe to restor palce where parsing prooces begun
-		//auto codeGeneratorState = codeGenerator.save(); 
-		//auto tokenizerState = tokenizer.save();
+		auto codeGeneratorState = codeGenerator.save(); 
+		auto tokenizerState = tokenizer.save();
 		codeGenerator.expretionStart();	
 		//term
 		if (!parseTermAndGenerateCode())
 		{
-			//codeGenerator.restore(codeGeneratorState);
-			//tokenizer.restore(tokenizerState);
-			codeGenerator.expretionEnd();
+			codeGenerator.restore(codeGeneratorState);
+			tokenizer.restore(tokenizerState);
 			return false;
 		}
 
@@ -477,7 +476,7 @@ private:
 		//varName 
 		else if (tokenizer.isItHasTokens(identifier))
 		{
-			codeGenerator.variabel();
+			codeGenerator.variabel(tokenizer.getToken(-1));
 			return true;
 		}		
 		// '(' expression ')'
