@@ -5,7 +5,7 @@
 #include<iostream>
 #include "Token.h"
 using namespace std;
-class CodeGenerator
+static class CodeGenerator
 {
 public:
 	CodeGenerator(string scierzkazWyjscia)
@@ -34,7 +34,7 @@ public:
 		code.erase(state.it, code.end());
 		glebokosc = state.glebokosc;
 	}
-	void wirteToFile()
+	void writeToFile()
 	{
 		plikWyjsciowy << code;
 	}

@@ -5,6 +5,7 @@
 #include"Tokenizer.h"
 #include "Token.h"
 #include"CodeGenerator.h"
+#include"NameMenager.h"
 using namespace std;
 class ParserAndCodeGenerator
 {
@@ -21,12 +22,13 @@ public:
 		{
 			cout<<e.what();
 		}
-		codeGenerator.wirteToFile();
+		codeGenerator.writeToFile();
 	}
 
 private:
 	Tokenizer& tokenizer;
 	CodeGenerator codeGenerator;
+	NameMenager nameMenager;
 
 
 	inline void parsingAndCodeGenerating()

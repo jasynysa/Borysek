@@ -141,12 +141,14 @@
   <ItemGroup>
     <ClCompile Include="CodeGenerator.cpp" />
     <ClCompile Include="Compiler.cpp" />
+    <ClCompile Include="NameMenager.cpp" />
     <ClCompile Include="Parser.cpp" />
     <ClCompile Include="Tokenizer.cpp" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="CodeGenerator.h" />
     <ClInclude Include="Compiler.h" />
+    <ClInclude Include="NameMenager.h" />
     <ClInclude Include="Token.h" />
     <ClInclude Include="ParserAndCodeGenerator.h" />
     <ClInclude Include="Tokenizer.h" />
