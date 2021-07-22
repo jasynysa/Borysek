@@ -8,7 +8,8 @@ using namespace std;
 static class CodeGenerator
 {
 public:
-	CodeGenerator(string scierzkazWyjscia)
+	CodeGenerator(string scierzkazWyjscia, NameMenager::NameMenager nm):
+		nameMenager(nm)
 	{
 		otwarciePliku(scierzkazWyjscia);
 
@@ -256,6 +257,7 @@ public:
 	}
 
 private:
+	NameMenager::NameMenager& nameMenager;
 	string code;
 	ofstream plikWyjsciowy;
 	std::vector<std::string> tokenyNazwa{ "clasS", "constructor", "function", "method", "field", "statiC", "var", "inT", "chaR", "boolean", "voiD", "truE", "falsE", "nulL", "thiS", "leT", "dO", "iF", "elsE", "whilE", "returN", "curlyL", "curlyR", "roundL", "roundR", "squareL", "squareR", "dot", "comma", "semicolon", "plus", "minus", "star", "slash", "ampersand", "line", "angleL", "angleR", "equal", "tylda", "integerConstant", "stringConstant", "identifier" };

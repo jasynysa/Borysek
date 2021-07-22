@@ -12,7 +12,7 @@ class ParserAndCodeGenerator
 public:
 	ParserAndCodeGenerator(Tokenizer& tokenizer, string scierzkaWyjscia) :
 		tokenizer(tokenizer),
-		codeGenerator(scierzkaWyjscia)
+		codeGenerator(scierzkaWyjscia,nameMenager)
 	{
 		try
 		{
@@ -24,11 +24,10 @@ public:
 		}
 		codeGenerator.writeToFile();
 	}
-
 private:
 	Tokenizer& tokenizer;
 	CodeGenerator codeGenerator;
-	NameMenager nameMenager;
+	NameMenager::NameMenager nameMenager;
 
 
 	inline void parsingAndCodeGenerating()
@@ -74,9 +73,14 @@ private:
 		else if (tokenizer.isItHasTokens({ isType,[](EnumToken t) {return t == identifier; } }))
 		{
 			Token typ = tokenizer.getToken(-2);
+			Token kind = tokenizer.getToken(-3);
 			//(',' varName)*
 			do
 			{
+				if (!nameMenager.isItVarNewName(tokenizer.getToken(-1), kind))
+				{
+					throw exception(((string)"variable identifier '"+tokenizer.getToken(-1).value +"' already exist").c_str());
+				}
 				//deklaracja zmiennej
 				codeGenerator.classVariableDefinition(typ, tokenizer.getValue(-1));
 			} while (tokenizer.isItHasTokens({ comma,identifier }));
@@ -104,18 +108,23 @@ private:
 		}
 		//('void' | type) subroutineName  
 		if (!tokenizer.isItHasTokens({ [](EnumToken t) {return t == voiD || t == isType(t) ? true : false; },[](EnumToken t) {return t == identifier; } }))
-		{
+		{			
 			throw exception("wrong soubroutine definition");
 		}
+		Token subroutineName = tokenizer.getToken(-1);
+		if (!nameMenager.isItSubroutineNewName(subroutineName, tokenizer.getToken(-3)))
+			{
+				throw exception(((string)"subroutine identifier '" + subroutineName.value + "' already exist").c_str());
+			}
 		codeGenerator.classSoubroutineDefinitionStart(tokenizer.getToken(-2), tokenizer.getToken(-1));
-
+		
 		//parameterList
-		if (!parseParameterListAndGenerateCode())
+		if (!parseParameterListAndGenerateCode(subroutineName))
 		{
 			throw exception("parameter list expected");
 		}
 		//subroutineBody
-		if (!parseSubroutineBodyAndGenerateCode())
+		if (!parseSubroutineBodyAndGenerateCode(subroutineName))
 		{
 			throw exception("sobroutine body expected");
 		}
@@ -125,7 +134,7 @@ private:
 	}
 
 	//'(' ( type varName (',' type varName)* )? ')'
-	bool parseParameterListAndGenerateCode()
+	bool parseParameterListAndGenerateCode(const Token& subroutineName)
 	{
 		// '(' type varName
 		if (!tokenizer.isItHasTokens(roundL))
@@ -134,14 +143,18 @@ private:
 		}
 		codeGenerator.parameterListStart();
 
-		if (tokenizer.isItHasTokens(isType) && tokenizer.isItHasTokens(identifier))
+		if (tokenizer.isItHasTokens({ isType, [](EnumToken t) {return t==identifier; } }))
 		{
 			do
 			{
+				if (!nameMenager.isItSubroutinesVarNewName(subroutineName, tokenizer.getToken(-1), parameter))
+				{
+					throw exception(((string)"subroutine's variable identifier '" + tokenizer.getToken(-1).value + "' already exist").c_str());
+				}
 				codeGenerator.parameterDefinition(tokenizer.getToken(-2), tokenizer.getToken(-1));
 
 			//(',' type varName)*
-			} while (tokenizer.isItHasTokens(comma) && tokenizer.isItHasTokens(isType) && tokenizer.isItHasTokens(identifier));
+			} while (tokenizer.isItHasTokens({ [](EnumToken t) {return t == comma; },isType,[](EnumToken t) {return t == identifier; } }));
 		}
 		// ')'
 		if (!tokenizer.isItHasTokens(roundR))
@@ -154,7 +167,7 @@ private:
 	}
 
 	//'{' varDec* statement* '}'
-	bool parseSubroutineBodyAndGenerateCode()
+	bool parseSubroutineBodyAndGenerateCode(const Token& subroutineName)
 	{
 		//'{'
 		if (!tokenizer.isItHasTokens(curlyL))
@@ -164,7 +177,7 @@ private:
 		codeGenerator.subroutineBodyStart();
 
 		//varDec*
-		while (parseVariableDefinitionAndGenerateCode()) {}
+		while (parseVariableDefinitionAndGenerateCode(subroutineName)) {}
 
 		//statement*
 		while (parseStatemantAndGenerateCode()) {}
@@ -180,7 +193,7 @@ private:
 	}
 
 	//'var' type varName (',' varName)* ';'
-	bool parseVariableDefinitionAndGenerateCode()
+	bool parseVariableDefinitionAndGenerateCode(const Token& subroutineName)
 	{
 		//'var'
 		if (!tokenizer.isItHasTokens(var))
@@ -194,6 +207,10 @@ private:
 		}
 		do
 		{
+			if (!nameMenager.isItSubroutinesVarNewName(subroutineName, tokenizer.getToken(-1), local))
+			{
+				throw exception(((string)"subroutine's variable identifier '" + tokenizer.getToken(-1).value + "' already exist").c_str());
+			}
 			codeGenerator.subrutineVariableDefinition(tokenizer.getToken(-2), tokenizer.getToken(-1));
 
 			//(',' varName)*

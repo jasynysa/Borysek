@@ -49,7 +49,7 @@ namespace NameMenager
 		}
 
 		//return true if token is identifier and hasn t been useed as subroutine name
-		bool isItSubrutineNewName(const Token& name, const Token& kind)
+		bool isItSubroutineNewName(const Token& name, const Token& kind)
 		{
 			if (name.token != identifier)
 			{
@@ -70,18 +70,29 @@ namespace NameMenager
 		}
 
 		//return true if tokens are identifier and var name hasn t been useed as given soubroutine's var name
-		bool isItSubroutinesVarName(Token functionName, Token varName)
+		bool isItSubroutinesVarNewName(Token functionName, Token varName, EnumToken kind)
 		{
 			if (functionName.token != identifier || varName.token != identifier)
 			{
 				throw exception("expected identifer");
 			}
+			if (kind != local && kind != parameter)
+			{
+				throw exception("expected kind of soubroutine's variable");
+			}
 			Subroutine s = mapSubroutinesNames.at(functionName.value);
 			if (s.mapSubroutineVarsName.count(varName.value) == 0)
 			{
 				Var var;
-				var.index = s.varCount++;
-				var.kind = EnumToken::var;
+				if (kind == local)
+				{
+					var.index = s.varLocalCount++;
+				}
+				else
+				{
+					var.index = s.varParameterCount++;
+				}
+				var.kind = kind;
 				s.mapSubroutineVarsName.emplace(varName.value, var);
 				return true;
 			}
@@ -113,7 +124,8 @@ namespace NameMenager
 		{
 			EnumToken kind;
 			map<string, Var> mapSubroutineVarsName;
-			int varCount = 0;
+			int varLocalCount = 0;
+			int varParameterCount = 0;
 		};
 
 		map<string, Subroutine> mapSubroutinesNames;
