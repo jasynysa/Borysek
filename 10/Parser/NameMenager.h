@@ -24,7 +24,7 @@ namespace NameMenager
 		{
 			if (name.token == identifier)
 			{
-				throw exception("expected identiier");
+				throw exception("expected identifier");
 			}
 			if (kind.token != statiC && kind.token != field)
 			{

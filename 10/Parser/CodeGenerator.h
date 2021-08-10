@@ -4,11 +4,12 @@
 #include<vector>
 #include<iostream>
 #include "Token.h"
+#include "NameMenager.h"
 using namespace std;
 static class CodeGenerator
 {
 public:
-	CodeGenerator(string scierzkazWyjscia, NameMenager::NameMenager nm):
+	CodeGenerator(string scierzkazWyjscia, NameMenager::NameMenager& nm):
 		nameMenager(nm)
 	{
 		otwarciePliku(scierzkazWyjscia);
@@ -26,36 +27,38 @@ public:
 	{
 		codeGeneratorState cgs;
 		cgs.glebokosc = glebokosc;
-		cgs.it = code.end();
+		cgs.it = codeXML.end();
 		return cgs;
 	}
 	//restore state of code from moment of call save function
 	void restore(codeGeneratorState state)
 	{
-		code.erase(state.it, code.end());
+		codeXML.erase(state.it, codeXML.end());
 		glebokosc = state.glebokosc;
 	}
 	void writeToFile()
 	{
-		plikWyjsciowy << code;
+		plikWyjsciowyXML << codeXML;
 	}
 
 	void classDefinitionStart(string identifier)
 	{
-		code += "<class>\n";
+		codeXML += "<class>\n";
 		 + "\t<keyword> class </keyword>\n";
 		 + "\t<indentifier> " + identifier + "</identifier\n>";
 		 + "\t<symbol> { </symbol\n>" ;
 		glebokosc++;
+
+		className = identifier;
 	}
 	void classDefinitionEnd()
 	{
 		glebokosc--;
-		code += "<\class>\n";
+		codeXML += "<\class>\n";
 	}
 	void classVariableDefinition(const Token& type, string name)
 	{
-		code += tabulacja() + "<variableDefinition>\n"
+		codeXML += tabulacja() + "<variableDefinition>\n"
 			+ tabulacja() + "\t<type>" + typeName(type) + "</type>\n"
 			+ tabulacja() + "\t<name>" + name + "<name>\n"
 			+ tabulacja() + "</variableDefinition>\n";
@@ -63,26 +66,26 @@ public:
 	}
 	void classSoubroutineDefinitionStart(Token returnType, Token name)
 	{
-		code += tabulacja() + "<soubroutineDefinition>\n";
+		codeXML += tabulacja() + "<soubroutineDefinition>\n";
 		glebokosc++;
-		code += tabulacja() + "<returnType>" + typeName(returnType) + "</returnType>\n"
+		codeXML += tabulacja() + "<returnType>" + typeName(returnType) + "</returnType>\n"
 			+ tabulacja() + "<name>" + name.value + "</name>\n";
 
-
+		//codeVM+=
 	}
 	void classSoubroutineDefinitionEnd()
 	{
 		glebokosc--;
-		code += tabulacja() + "</soubroutineDefinition>\n";
+		codeXML += tabulacja() + "</soubroutineDefinition>\n";
 	}
 	void parameterListStart()
 	{
-		code += tabulacja() + "<parameterList>\n";
+		codeXML += tabulacja() + "<parameterList>\n";
 		glebokosc++;
 	}
 	void parameterDefinition(const Token& type, const Token& name)
 	{
-		code += tabulacja() + "<parameter>\n"
+		codeXML += tabulacja() + "<parameter>\n"
 			+ tabulacja() + "\t<type>" + typeName(type) + "</type>\n"
 			+ tabulacja() + "\t<name>" + name.value + "<name>\n"
 			+ tabulacja() + "</parameter>\n";
@@ -90,176 +93,187 @@ public:
 	void parameterListEnd()
 	{
 		glebokosc--;
-		code += tabulacja() + "</paremetreList>\n";
+		codeXML += tabulacja() + "</paremetreList>\n";
 	}
 	void subroutineBodyStart()
 	{
-		code += tabulacja() + "<subroutineBody>\n";
+		codeXML += tabulacja() + "<subroutineBody>\n";
 		glebokosc++;
 	}
 	void subroutineBodyEnd()
 	{
 		glebokosc--;
-		code += tabulacja() + "</subroutineBody>\n";
+		codeXML += tabulacja() + "</subroutineBody>\n";
 	}
 	void letStatemantStart()
 	{
-		code += tabulacja() + "<letStatemant>\n";
+		codeXML += tabulacja() + "<letStatemant>\n";
 		glebokosc++;
 	}
 	void letStatemantEnd()
 	{
 		glebokosc--;
-		code += tabulacja() + "</letStatemant>\n";
+		codeXML += tabulacja() + "</letStatemant>\n";
 	}
 	void ifStatemantStart()
 	{
-		code += tabulacja() + "<ifStatemant>\n";
+		codeXML += tabulacja() + "<ifStatemant>\n";
 		glebokosc++;
 	}
 	void ifStatemantEnd()
 	{
 		glebokosc--;
-		code += tabulacja() + "</ifStatemant>\n";
+		codeXML += tabulacja() + "</ifStatemant>\n";
 	}
 	void whileStatemantStart()
 	{
-		code += tabulacja() + "<whielStatemant>\n";
+		codeXML += tabulacja() + "<whielStatemant>\n";
 		glebokosc++;
 	}
 	void whileStatemantEnd()
 	{
 		glebokosc--;
-		code += tabulacja() + "</whileStatemant>\n";
+		codeXML += tabulacja() + "</whileStatemant>\n";
 	}
 	void doStatemantStart()
 	{
-		code += tabulacja() + "<doStatemant>\n";
+		codeXML += tabulacja() + "<doStatemant>\n";
 		glebokosc++;
 
 	}
 	void doStatemantEnd()
 	{
 		glebokosc--;
-		code += tabulacja() + "</doStatemant>\n";
+		codeXML += tabulacja() + "</doStatemant>\n";
 	}
 	void returnStatemantStart()
 	{
-		code += tabulacja() + "<returnStatemant>\n";
+		codeXML += tabulacja() + "<returnStatemant>\n";
 		glebokosc++;
 	}
 	void returnStatemantEnd()
 	{
 		glebokosc--;
-		code += tabulacja() + "</returnStatemant>\n";
+		codeXML += tabulacja() + "</returnStatemant>\n";
 	}
 	void letVariableStart(const Token& var)
 	{
-		code += tabulacja() + "<letVariable>\n";
+		codeXML += tabulacja() + "<letVariable>\n";
 		glebokosc++;
-		code += tabulacja() + "<name>" + var.value + "</name>\n";
+		codeXML += tabulacja() + "<name>" + var.value + "</name>\n";
 	}
 	void letVariableEnd()
 	{
 		glebokosc--;
-		code += tabulacja() + "</letVariable>\n";
+		codeXML += tabulacja() + "</letVariable>\n";
 	}
 	void letVariableIndexStart()
 	{
-		code += tabulacja() + "<index>\n";
+		codeXML += tabulacja() + "<index>\n";
 		glebokosc++;
 	}
 	void letVariableIndexEnd()
 	{
 		glebokosc--;
-		code += tabulacja() + "</index>\n";
+		codeXML += tabulacja() + "</index>\n";
 	}
 	void expretionStart()
 	{
-		code += tabulacja() + "<expretion>\n";
+		codeXML += tabulacja() + "<expretion>\n";
 		glebokosc++;
 	}
 	void expretionEnd()
 	{
 		glebokosc--;
-		code += tabulacja() + "</expretion>\n";
+		codeXML += tabulacja() + "</expretion>\n";
 	}
 	void operatoR(const Token& op)
 	{
-		code += tabulacja() + "<operator>" + tokenyNazwa[op.token] + "</operator>\n";
+		codeXML += tabulacja() + "<operator>" + tokenyNazwa[op.token] + "</operator>\n";
 	}
 	void unaryOperator(const Token& op)
 	{
-		code += tabulacja() + "<unaryOperator>" + tokenyNazwa[op.token] + "</unaryOperator>\n";
+		codeXML += tabulacja() + "<unaryOperator>" + tokenyNazwa[op.token] + "</unaryOperator>\n";
 	}
 	void constant(const Token& constant)
 	{
-		code += tabulacja() + "<" + tokenyNazwa[constant.token] + ">\n"
+		codeXML += tabulacja() + "<" + tokenyNazwa[constant.token] + ">\n"
 			+ tabulacja() + "\t<value>" + constant.value + "</value>\n"
 			+tabulacja()+"</" + tokenyNazwa[constant.token] + ">\n";
 	}
 	void keywordConstant(const Token& keyword)
 	{
-		code += tabulacja() + "<keywordConstant>" + tokenyNazwa[keyword.token] + "</keywordConstant>\n";
+		codeXML += tabulacja() + "<keywordConstant>" + tokenyNazwa[keyword.token] + "</keywordConstant>\n";
 	}
 	void arrayStart(const Token& arraY)
 	{
-		code += tabulacja() + "<array>\n";
+		codeXML += tabulacja() + "<array>\n";
 		glebokosc++;
-		code += tabulacja() + "<name>"+arraY.value+"</name>\n";
+		codeXML += tabulacja() + "<name>"+arraY.value+"</name>\n";
 	}
 	void arrayEnd()
 	{
 		glebokosc--;
-		code += tabulacja() + "</array>\n";
+		codeXML += tabulacja() + "</array>\n";
 	}
 	void variabel(const Token& name)
 	{
-		code += tabulacja() + "<variable>\n"
+		codeXML += tabulacja() + "<variable>\n"
 			+ tabulacja() + "\t<name>" + name.value + "<name>\n"
 			+ tabulacja() + "</variable>\n";
 	}
 	void subroutineCallStart()
 	{
-		code += tabulacja() + "<subrutineCall>\n";
+		codeXML += tabulacja() + "<subrutineCall>\n";
 		glebokosc++;
 	}
 	void subroutineCallEnd()
 	{
 		glebokosc--;
-		code += tabulacja() + "</subrutineCall>\n";
+		codeXML += tabulacja() + "</subrutineCall>\n";
 	}
 	void soubroutineName(const Token& name)
 	{
-		code +=tabulacja() + "<subrutineName>" + name.value + "<subrutineName>\n";
+		codeXML +=tabulacja() + "<subrutineName>" + name.value + "<subrutineName>\n";
 	}
 	void soubroutineClassName(const Token& className, const Token& subroutineName)
 	{
-		code += tabulacja() + "<className>"+className.value + "</className>\n"
+		codeXML += tabulacja() + "<className>"+className.value + "</className>\n"
 			+ tabulacja() + "<subrutineName>" + subroutineName.value + "<subrutineName>\n";
 	}
 	void expressionListStart()
 	{
-		code += tabulacja() + "<arguments>\n";
+		codeXML += tabulacja() + "<arguments>\n";
 		glebokosc++;
 	}
 	void expressionListEnd()
 	{
 		glebokosc--;
-		code += tabulacja() + "</arguments>\n";
+		codeXML += tabulacja() + "</arguments>\n";
 	}
 	void subrutineVariableDefinition(const Token& type, const Token& name)
 	{
-		code += tabulacja() + "<variableDefinition>\n"
+		codeXML += tabulacja() + "<variableDefinition>\n"
 			+ tabulacja() + "\t<type>" + typeName(type) + "</type>\n"
 			+ tabulacja() + "\t<name>" + name.value + "<name>\n"
 			+ tabulacja() + "</variableDefinition>\n";
+
+		localVariablesQuantity++;
+	}
+	void subroutineVariableDeclarationEnd(const Token& functionName)
+	{
+		//in this point i know quantity of local variables and a can define function in vm language
+		writeFunctionDefinition(functionName.value, localVariablesQuantity);
+		localVariablesQuantity = 0;
 	}
 
 private:
+	int localVariablesQuantity=0;
+	string className;
 	NameMenager::NameMenager& nameMenager;
-	string code;
-	ofstream plikWyjsciowy;
+	string codeXML;
+	string codeVM;
+	ofstream plikWyjsciowyXML;
 	std::vector<std::string> tokenyNazwa{ "clasS", "constructor", "function", "method", "field", "statiC", "var", "inT", "chaR", "boolean", "voiD", "truE", "falsE", "nulL", "thiS", "leT", "dO", "iF", "elsE", "whilE", "returN", "curlyL", "curlyR", "roundL", "roundR", "squareL", "squareR", "dot", "comma", "semicolon", "plus", "minus", "star", "slash", "ampersand", "line", "angleL", "angleR", "equal", "tylda", "integerConstant", "stringConstant", "identifier" };
 	int glebokosc = 0;//zmienna okreslajaca aktulana glebokosc w drzewie wyrazen 
 
@@ -270,8 +284,8 @@ private:
 	}
 	inline void otwarciePliku(string scierzkaWyjscia)
 	{
-		plikWyjsciowy.open(scierzkaWyjscia);
-		if (!plikWyjsciowy.is_open())
+		plikWyjsciowyXML.open(scierzkaWyjscia);
+		if (!plikWyjsciowyXML.is_open())
 		{
 			throw std::exception(("nie mozna otworzyc pliku : " + scierzkaWyjscia).c_str());
 		}
@@ -284,6 +298,46 @@ private:
 			t += "\t";
 		}
 		return t;
+	}
+
+	using MemorySegment = string;
+	using Arithmetic = string;
+
+	void writePush(MemorySegment memorySegment, int index)
+	{
+		codeVM += "push " + memorySegment + " " + std::to_string(index)+"\n";
+	}
+	void writePop(MemorySegment memorySegment, int index)
+	{
+		codeVM += "pop " + memorySegment + " " + std::to_string(index) + "\n";
+	}
+	void writeAritmethic(Arithmetic arithmetic)
+	{
+		codeVM += arithmetic + "\n";
+	}
+	void writeLabel(string label)
+	{
+		codeVM += "label " + label + "\n";
+	}
+	void writeGoTo(string label)
+	{
+		codeVM += "goto " + label + "\n";
+	}
+	void writeIfGoTo(string label)
+	{
+		codeVM += "if-goto " + label + "\n";
+	}
+	void writeFunctionCall(string functionName, int argsQuantity)
+	{
+		codeVM += "call " + className + "." + functionName + " " + std::to_string(argsQuantity)+"\n";
+	}
+	void writeFunctionDefinition(string functionName, int localsQuantity)
+	{
+		codeVM += "function " + className + "." + functionName + " " + std::to_string(localsQuantity) + "\n";
+	}
+	void writeReturn()
+	{
+		codeVM += "return\n";
 	}
 
 };

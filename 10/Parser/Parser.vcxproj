@@ -147,6 +147,7 @@
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="CodeGenerator.h" />
+    <ClInclude Include="SyntaxTree.h" />
     <ClInclude Include="Compiler.h" />
     <ClInclude Include="NameMenager.h" />
     <ClInclude Include="Token.h" />

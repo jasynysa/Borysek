@@ -6,12 +6,14 @@
 #include "Token.h"
 #include"CodeGenerator.h"
 #include"NameMenager.h"
+#include "SyntaxTree.h"
 using namespace std;
 class ParserAndCodeGenerator
 {
 public:
 	ParserAndCodeGenerator(Tokenizer& tokenizer, string scierzkaWyjscia) :
 		tokenizer(tokenizer),
+		//nameMenager(),
 		codeGenerator(scierzkaWyjscia,nameMenager)
 	{
 		try
@@ -28,6 +30,7 @@ private:
 	Tokenizer& tokenizer;
 	CodeGenerator codeGenerator;
 	NameMenager::NameMenager nameMenager;
+	SyntaxTree syntaxTree;
 
 
 	inline void parsingAndCodeGenerating()
@@ -39,16 +42,18 @@ private:
 	void parseClassAndGenerateCode()
 	{
 		//'class' className '{'
-		if (tokenizer.isItHasTokens({ clasS,identifier,curlyL }))
+		if (tokenizer.isItHasTokens({ EnumToken::clasS,identifier,curlyL }))
 		{
-			//rozpoczecie definicji kalsy
-			codeGenerator.classDefinitionStart(tokenizer.getValue(-2));
-			//classVarDec*
-			while (parseClassVariableDefinitionAndGenerateCode()) {}
-			//subroutineDec*
-			while (parseClassSubroutineDefinitionAndGenerateCode()) {}
-			//zakonczenie definicji klasy
-			codeGenerator.classDefinitionEnd();
+			SyntaxTree::NodePointer parentClass = syntaxTree.addNode({ tokenizer.getToken(-3) });
+			
+			SyntaxTree::NodePointer classVarsDefinitions = syntaxTree.addNode({},parentClass);
+			//classVarDef*
+			while (parseClassVariableDefinitionAndGenerateCode(classVarsDefinitions)) {}
+
+			SyntaxTree::NodePointer classSubroutinesDefinitions = syntaxTree.addNode({},parentClass);
+			//subroutineDef*
+			while (parseClassSubroutineDefinitionAndGenerateCode(classSubroutinesDefinitions)) {}
+
 			//'}'
 			if (!tokenizer.isItHasTokens(vector<EnumToken>{curlyR }))
 			{
@@ -59,10 +64,11 @@ private:
 		{
 			throw exception("wrong class definition");
 		}
+		
 	}
 
 	//('static' | 'field') type varName(',' varName) * ';'
-	bool parseClassVariableDefinitionAndGenerateCode()
+	bool parseClassVariableDefinitionAndGenerateCode(SyntaxTree::NodePointer classVariablesDefinitions)
 	{
 		//('static' | 'field')
 		if (!tokenizer.isItHasTokens([](EnumToken t) {return t == statiC || t == field; }))
@@ -77,12 +83,12 @@ private:
 			//(',' varName)*
 			do
 			{
-				if (!nameMenager.isItVarNewName(tokenizer.getToken(-1), kind))
+				if (!syntaxTree.isItVarNewName(tokenizer.getToken(-1)))
 				{
 					throw exception(((string)"variable identifier '"+tokenizer.getToken(-1).value +"' already exist").c_str());
 				}
 				//deklaracja zmiennej
-				codeGenerator.classVariableDefinition(typ, tokenizer.getValue(-1));
+				syntaxTree.addNode({ kind,typ,tokenizer.getToken(-1) },classVariablesDefinitions);
 			} while (tokenizer.isItHasTokens({ comma,identifier }));
 			//';'
 			if (!tokenizer.isItHasTokens(vector<EnumToken>{ EnumToken::semicolon }))
@@ -99,7 +105,7 @@ private:
 	}
 
 	//('constructor' | 'function' | 'method') ('void' | type) subroutineName parameterList subroutineBody
-	bool parseClassSubroutineDefinitionAndGenerateCode()
+	bool parseClassSubroutineDefinitionAndGenerateCode(SyntaxTree::NodePointer classSubroutinesDefinitions)
 	{
 		//('constructor' | 'function' | 'method')
 		if (!tokenizer.isItHasTokens([](EnumToken t) {return t == constructor || t == function || t == method ? true : false; }))
@@ -112,46 +118,47 @@ private:
 			throw exception("wrong soubroutine definition");
 		}
 		Token subroutineName = tokenizer.getToken(-1);
-		if (!nameMenager.isItSubroutineNewName(subroutineName, tokenizer.getToken(-3)))
+		if (!syntaxTree.isItsubroutineNewName(subroutineName, tokenizer.getToken(-3)))
 			{
 				throw exception(((string)"subroutine identifier '" + subroutineName.value + "' already exist").c_str());
 			}
-		codeGenerator.classSoubroutineDefinitionStart(tokenizer.getToken(-2), tokenizer.getToken(-1));
+		//codeGenerator.classSoubroutineDefinitionStart(tokenizer.getToken(-2), tokenizer.getToken(-1));
+		SyntaxTree::NodePointer subroutine = syntaxTree.addNode({ tokenizer.getToken(-3), tokenizer.getToken(-2), tokenizer.getToken(-1) }, classSubroutinesDefinitions);
 		
 		//parameterList
-		if (!parseParameterListAndGenerateCode(subroutineName))
+		if (!parseParameterListAndGenerateCode(subroutine))
 		{
 			throw exception("parameter list expected");
 		}
 		//subroutineBody
-		if (!parseSubroutineBodyAndGenerateCode(subroutineName))
+		if (!parseSubroutineBodyAndGenerateCode(subroutine))
 		{
 			throw exception("sobroutine body expected");
 		}
-		codeGenerator.classSoubroutineDefinitionEnd();
+		//codeGenerator.classSoubroutineDefinitionEnd();
 
 		return true;
 	}
 
 	//'(' ( type varName (',' type varName)* )? ')'
-	bool parseParameterListAndGenerateCode(const Token& subroutineName)
+	bool parseParameterListAndGenerateCode(SyntaxTree::NodePointer subroutine)
 	{
 		// '(' type varName
 		if (!tokenizer.isItHasTokens(roundL))
 		{
 			return false;
 		}
-		codeGenerator.parameterListStart();
-
+		SyntaxTree::NodePointer parameterList = syntaxTree.addNode({}, subroutine);
 		if (tokenizer.isItHasTokens({ isType, [](EnumToken t) {return t==identifier; } }))
 		{
 			do
 			{
-				if (!nameMenager.isItSubroutinesVarNewName(subroutineName, tokenizer.getToken(-1), parameter))
+				if (!syntaxTree.isItSubroutinesVariableNewName(subroutine, tokenizer.getToken(-1)))
 				{
 					throw exception(((string)"subroutine's variable identifier '" + tokenizer.getToken(-1).value + "' already exist").c_str());
 				}
-				codeGenerator.parameterDefinition(tokenizer.getToken(-2), tokenizer.getToken(-1));
+				//codeGenerator.parameterDefinition(tokenizer.getToken(-2), tokenizer.getToken(-1));
+				syntaxTree.addNode({ tokenizer.getToken(-2),tokenizer.getToken(-1) }, parameterList);
 
 			//(',' type varName)*
 			} while (tokenizer.isItHasTokens({ [](EnumToken t) {return t == comma; },isType,[](EnumToken t) {return t == identifier; } }));
@@ -161,39 +168,38 @@ private:
 		{
 			throw exception("expected ')'");
 		}
-		codeGenerator.parameterListEnd();
 
 		return true;
 	}
 
 	//'{' varDec* statement* '}'
-	bool parseSubroutineBodyAndGenerateCode(const Token& subroutineName)
+	bool parseSubroutineBodyAndGenerateCode(SyntaxTree::NodePointer subroutine)
 	{
 		//'{'
 		if (!tokenizer.isItHasTokens(curlyL))
 		{
 			return false;
 		}
-		codeGenerator.subroutineBodyStart();
+		SyntaxTree::NodePointer subroutineBody = syntaxTree.addNode({}, subroutine);
 
+		SyntaxTree::NodePointer localVarsDefinitions = syntaxTree.addNode({}, subroutineBody);
 		//varDec*
-		while (parseVariableDefinitionAndGenerateCode(subroutineName)) {}
+		while (parseSubroutinesVariablesDefinitionAndGenerateCode(localVarsDefinitions)) {}
 
+		SyntaxTree::NodePointer statemants = syntaxTree.addNode({}, subroutineBody);
 		//statement*
-		while (parseStatemantAndGenerateCode()) {}
+		while (parseStatemantAndGenerateCode(statemants)) {}
 
 		//'}'
 		if (!tokenizer.isItHasTokens(curlyR))
 		{
 			throw exception("expected '}'");
 		}
-		codeGenerator.subroutineBodyEnd();
-
 		return true;
 	}
 
 	//'var' type varName (',' varName)* ';'
-	bool parseVariableDefinitionAndGenerateCode(const Token& subroutineName)
+	bool parseSubroutinesVariablesDefinitionAndGenerateCode(SyntaxTree::NodePointer localVariablesDefinitions)
 	{
 		//'var'
 		if (!tokenizer.isItHasTokens(var))
@@ -207,11 +213,11 @@ private:
 		}
 		do
 		{
-			if (!nameMenager.isItSubroutinesVarNewName(subroutineName, tokenizer.getToken(-1), local))
+			if (!syntaxTree.isItSubroutinesVarNewName(localVariablesDefinitions, tokenizer.getToken(-1)))
 			{
 				throw exception(((string)"subroutine's variable identifier '" + tokenizer.getToken(-1).value + "' already exist").c_str());
 			}
-			codeGenerator.subrutineVariableDefinition(tokenizer.getToken(-2), tokenizer.getToken(-1));
+			syntaxTree.addNode({ tokenizer.getToken(-2), tokenizer.getToken(-1) }, localVariablesDefinitions);
 
 			//(',' varName)*
 		} while (tokenizer.isItHasTokens({ comma,identifier }));
@@ -225,25 +231,25 @@ private:
 	}
 
 	//letStatement | ifStatement | whileStatement |	doStatement | returnStatement
-	bool parseStatemantAndGenerateCode()
+	bool parseStatemantAndGenerateCode(SyntaxTree::NodePointer statemants)
 	{
-		if (parseLetStatemantAndGenerateCode())
+		if (parseLetStatemantAndGenerateCode(statemants))
 		{
 			return true;
 		}
-		else if (parseIfStatemantAndGenerateCode())
+		else if (parseIfStatemantAndGenerateCode(statemants))
 		{
 			return true;
 		}
-		else if (parseWhileStatemantAndGenerateCode())
+		else if (parseWhileStatemantAndGenerateCode(statemants))
 		{
 			return true;
 		}
-		else if (parseDoStatemantAndGenerateCode())
+		else if (parseDoStatemantAndGenerateCode(statemants))
 		{
 			return true;
 		}
-		else if (parseReturnStatemantAndGenerateCode())
+		else if (parseReturnStatemantAndGenerateCode(statemants))
 		{
 			return true;
 		}
@@ -253,70 +259,54 @@ private:
 		}
 	}
 
-	//'let' varName('[' expression ']') ? '=' expression ';'
-	bool parseLetStatemantAndGenerateCode()
+	//'let' varSelect '=' expression ';'
+	bool parseLetStatemantAndGenerateCode(SyntaxTree::NodePointer statemants)
 	{
 		// 'let'
 		if (!tokenizer.isItHasTokens(leT))
 		{
 			return false;
 		}
-		codeGenerator.letStatemantStart();
-		// varName
-		if (!tokenizer.isItHasTokens(identifier))
+		SyntaxTree::NodePointer letStatemant = syntaxTree.addNode({ tokenizer.getToken(-1) }, statemants);
+
+		//varSelect
+		if (!parseVarSelect(letStatemant))
 		{
 			throw exception("wrong let statemant");
-		}
-
-		codeGenerator.letVariableStart(tokenizer.getToken(-1));
-
-		// ('[' expression ']') ?
-		if (tokenizer.isItHasTokens(squareL))
-		{
-			codeGenerator.letVariableIndexStart();
-
-			if (!parseExpressionAndGenerateCode())
-			{
-				throw exception("expretion required");
-			}
-			if (!tokenizer.isItHasTokens(squareR))
-			{
-				throw exception("expected ']'");
-			}
-			codeGenerator.letVariableIndexEnd();
-		}
-		codeGenerator.letVariableEnd();
+		}		
 		//'='
 		if (!tokenizer.isItHasTokens(EnumToken::equal))
 		{
 			throw exception("expected '='");
 		}
 		// expression
-		if (!parseExpressionAndGenerateCode())
+		if (!parseExpressionAndGenerateCode(letStatemant))
 		{
-			throw exception("expecterd expresion");
+			throw exception("expected expresion");
 		}		
 		// ';'
 		if (!tokenizer.isItHasTokens(semicolon))
 		{
 			throw exception("expected ';'");
 		}
-		codeGenerator.letStatemantEnd();
 
 		return true;
 	}
+
 	//'if' '(' expression ')' '{' statements '}'
 	//('else' '{' statements '}') ?
-	bool parseIfStatemantAndGenerateCode() //another style of 'if' structure
+	bool parseIfStatemantAndGenerateCode(SyntaxTree::NodePointer statemants) //another style of 'if' structure
 	{
 		if (tokenizer.isItHasTokens(iF))
 		{
-			codeGenerator.ifStatemantStart();
+			//codeGenerator.ifStatemantStart();
+			SyntaxTree::NodePointer ifStatemant = syntaxTree.addNode({ tokenizer.getToken(-1) }, statemants);
+
 			if (!tokenizer.isItHasTokens(roundL))
 			{
 				throw exception("expected '('");
 			}
-			if (!parseExpressionAndGenerateCode())
+			if (!parseExpressionAndGenerateCode(ifStatemant))
 			{
 				throw exception("expected expression");
 			}
@@ -328,7 +318,7 @@ private:
 			{
 				throw exception("expected '{'");
 			}
-			if (!parseStatemantAndGenerateCode())
+			if (!parseStatemantAndGenerateCode(ifStatemant))
 			{
 				throw exception("expected statemant");
 			}
@@ -342,7 +332,7 @@ private:
 				{
 					throw exception("expected '{'");
 				}
-				if (!parseStatemantAndGenerateCode())
+				if (!parseStatemantAndGenerateCode(ifStatemant))
 				{
 					throw exception("expected statemant");
 				}
@@ -351,22 +341,22 @@ private:
 					throw exception("expected '}'");
 				}
 			}
-			codeGenerator.ifStatemantEnd();
 			return true;
 		}
 		return false;
 	}
+
 	// 'while' '(' expression ')' '{' statements '}'
-	bool parseWhileStatemantAndGenerateCode()
+	bool parseWhileStatemantAndGenerateCode(SyntaxTree::NodePointer statemants)
 	{
 		if (tokenizer.isItHasTokens(whilE))
 		{
-			codeGenerator.whileStatemantStart();
+			SyntaxTree::NodePointer whileStatemant = syntaxTree.addNode({ tokenizer.getToken(-1) }, statemants);
 			if (!tokenizer.isItHasTokens(roundL))
 			{
 				throw exception("expected '('");
 			}
-			if (!parseExpressionAndGenerateCode())
+			if (!parseExpressionAndGenerateCode(whileStatemant))
 			{
 				throw exception("expected expression");
 			}
@@ -378,7 +368,7 @@ private:
 			{
 				throw exception("expected '{'");
 			}
-			if (!parseStatemantAndGenerateCode())
+			if (!parseStatemantAndGenerateCode(whileStatemant))
 			{
 				throw exception("expected statemant");
 			}
@@ -386,18 +376,19 @@ private:
 			{
 				throw exception("expected '}'");
 			}
-			codeGenerator.whileStatemantEnd();
 			return true;
 		}
 		return false;
 	}
+
 	// 'do' subroutineCall ';'
-	bool parseDoStatemantAndGenerateCode()
+	bool parseDoStatemantAndGenerateCode(SyntaxTree::NodePointer statemants)
 	{
 		if (tokenizer.isItHasTokens(dO))
 		{
-			codeGenerator.doStatemantStart();
-			if (!parseSubroutineCallAndGenerateCode())
+			SyntaxTree::NodePointer doStatemant = syntaxTree.addNode({ tokenizer.getToken(-1) }, statemants);
+
+			if (!parseSubroutineCallAndGenerateCode(doStatemant))
 			{
 				throw exception("expected subroutineCall");
 			}
@@ -405,103 +396,108 @@ private:
 			{
 				throw exception("expected ';'");
 			}
-			codeGenerator.doStatemantEnd();
 			return true;
 		}
 		return false;
 	}
+
 	// 'return' expression? ';'
-	bool parseReturnStatemantAndGenerateCode()
+	bool parseReturnStatemantAndGenerateCode(SyntaxTree::NodePointer statemants)
 	{
 		if (tokenizer.isItHasTokens(returN))
 		{
-			codeGenerator.returnStatemantStart();
-			parseExpressionAndGenerateCode();
+			SyntaxTree::NodePointer returnStatemant = syntaxTree.addNode({ tokenizer.getToken(-1) }, statemants);
+
+			parseExpressionAndGenerateCode(returnStatemant);
 			if (!tokenizer.isItHasTokens(semicolon))
 			{
 				throw exception("expected ';'");
 			}
-			codeGenerator.returnStatemantEnd();
 			return true;
 		}
 		return false;
 	}
 
-	//term (op term)*
-	bool parseExpressionAndGenerateCode()
-	{	
-		//saving state of CG prewent from incorect code generating during parsing proces which in the end ocure incorect
-		//saving state of tokenizer alowe to restor palce where parsing prooces begun
-		auto codeGeneratorState = codeGenerator.save(); 
-		auto tokenizerState = tokenizer.save();
-		codeGenerator.expretionStart();	
-		//term
-		if (!parseTermAndGenerateCode())
+	//' varName ('[' expression ']')?
+	bool parseVarSelect(SyntaxTree::NodePointer parent)
+	{
+		// varName
+		if (!tokenizer.isItHasTokens(identifier))
 		{
-			codeGenerator.restore(codeGeneratorState);
-			tokenizer.restore(tokenizerState);
 			return false;
 		}
+		SyntaxTree::NodePointer varSelect = syntaxTree.addNode({ tokenizer.getToken(-1) }, parent);
 
-		//(op term)*
-		while (parseOpAndGenerateCode())
+		// ('[' expression ']') ?
+		if (tokenizer.isItHasTokens(squareL))
 		{
-			if (!parseTermAndGenerateCode())
+			if (!parseExpressionAndGenerateCode(varSelect))
 			{
-				throw exception("expected term");
-			}
-		}
-		codeGenerator.expretionEnd();
-		return true;
-	}
-	// integerConstant | stringConstant | keywordConstant |	
-	// varName | varName '[' expression ']' | subroutineCall |
-	//	'(' expression ')' | unaryOp term
-	bool parseTermAndGenerateCode()
-	{
-		// integerConstant | stringConstant
-		if (tokenizer.isItHasTokens([](EnumToken t){return t==integerConstant||t==stringConstant; }))
-		{
-			codeGenerator.constant(tokenizer.getToken(-1));
-			return true;
-		}
-		// keywordConstant -> 'true'|'false'|'null'|'this'
-		else if (tokenizer.isItHasTokens([](EnumToken t){return  t==truE||t==falsE||t==nulL||t==thiS; }))
-		{
-			codeGenerator.keywordConstant(tokenizer.getToken(-1));
-			return true;
-		}
-		// subroutineCall
-		else if (parseSubroutineCallAndGenerateCode())
-		{
-			return true;
-		}
-		//varName '[' expression ']'
-		else if (tokenizer.isItHasTokens({ identifier, squareL }))
-		{
-			codeGenerator.arrayStart(tokenizer.getToken(-2));
-
-			if (!parseExpressionAndGenerateCode())
-			{
-				throw exception("expected expression");
+				throw exception("expretion required");
 			}
 			if (!tokenizer.isItHasTokens(squareR))
 			{
 				throw exception("expected ']'");
 			}
-			codeGenerator.arrayEnd();
+		}
+	}
+	//term (op term)*
+	bool parseExpressionAndGenerateCode(SyntaxTree::NodePointer parent)
+	{	
+		//saving state of CG prewent from incorect code generating during parsing proces which in the end ocure incorect
+		//saving state of tokenizer alowe to restor palce where parsing prooces begun
+		/*auto codeGeneratorState = codeGenerator.save(); 
+		auto tokenizerState = tokenizer.save();
+		codeGenerator.expretionStart();	*/
+		SyntaxTree::NodePointer expretion = syntaxTree.addNode({}, parent);
+		//term
+		if (!parseTermAndGenerateCode(expretion))
+		{
+			return false;
+		}
+
+		//(op term)*
+		while (parseOpAndGenerateCode(expretion))
+		{
+
+			if (!parseTermAndGenerateCode(expretion->getChild(0)))
+			{
+				throw exception("expected term");
+			}
+		}
+		return true;
+	}
+	// integerConstant | stringConstant | keywordConstant |	
+	// varName | varName '[' expression ']' | subroutineCall |
+	//	'(' expression ')' | unaryOp term
+	bool parseTermAndGenerateCode(SyntaxTree::NodePointer parent)
+	{
+		// integerConstant | stringConstant
+		if (tokenizer.isItHasTokens([](EnumToken t){return t==integerConstant||t==stringConstant; }))
+		{
+			syntaxTree.addNode({ tokenizer.getToken(-1) }, parent);
 			return true;
 		}
-		//varName 
-		else if (tokenizer.isItHasTokens(identifier))
+		// keywordConstant -> 'true'|'false'|'null'|'this'
+		else if (tokenizer.isItHasTokens([](EnumToken t){return  t==truE||t==falsE||t==nulL||t==thiS; }))
 		{
-			codeGenerator.variabel(tokenizer.getToken(-1));
+			syntaxTree.addNode({ tokenizer.getToken(-1) }, parent);
 			return true;
-		}		
+		}
+		// subroutineCall
+		else if (parseSubroutineCallAndGenerateCode(parent))
+		{
+			return true;
+		}
+		//varSelect
+		else if(parseVarSelect(parent))
+		{
+			return true;
+		}
 		// '(' expression ')'
 		else if (tokenizer.isItHasTokens(roundL))
 		{
-			if (!parseExpressionAndGenerateCode())
+			if (!parseExpressionAndGenerateCode(parent))
 			{
 				throw exception("expected expression");
 			}
@@ -515,8 +511,9 @@ private:
 		//unaryOp-> '-' | '~'
 		else if (tokenizer.isItHasTokens({ EnumToken::minus,tylda }))
 		{
-			codeGenerator.unaryOperator(tokenizer.getToken(-1));
-			if (!parseTermAndGenerateCode())
+			//codeGenerator.unaryOperator(tokenizer.getToken(-1));
+			SyntaxTree::NodePointer unaryOp = syntaxTree.addNode({ tokenizer.getToken(-1) }, parent);
+			if (!parseTermAndGenerateCode(unaryOp))
 			{
 				throw exception("expected term");
 			}
@@ -528,27 +525,27 @@ private:
 		}
 	}
 	//'+'|'-'|'*'|'/'|'&'|'|'|'<'|'>'|'='
-	bool parseOpAndGenerateCode()
+	bool parseOpAndGenerateCode(SyntaxTree::NodePointer parent)
 	{
 		if (tokenizer.isItHasTokens([](EnumToken t) {return (t == EnumToken::plus || t == EnumToken::minus || t == star || t == slash || t == ampersand || t == line || t == angleL || t == angleR || t == EnumToken::equal); }))
 		{
-			codeGenerator.operatoR(tokenizer.getToken(-1));
+			syntaxTree.pushOver({ tokenizer.getToken(-1) }, parent->getChild(0));
 			return true;
 		}
 		return false;
 	}
 	// subroutineName '(' expressionList ')' | 
 	// (className |varName) '.' subroutineName '(' expressionList ')'
-	bool parseSubroutineCallAndGenerateCode()
+	bool parseSubroutineCallAndGenerateCode(SyntaxTree::NodePointer parent)
 	{
 
 		// subroutineName '('		//this combinationa of tokens clearly express subrutine call
 		if (tokenizer.isItHasTokens({ identifier,roundL }))
 		{
-			codeGenerator.subroutineCallStart();
-			codeGenerator.soubroutineName(tokenizer.getToken(-2));
+			SyntaxTree::NodePointer subroutineCall = syntaxTree.addNode({ tokenizer.getToken(-2) }, parent);
+			//codeGenerator.soubroutineName(tokenizer.getToken(-2));
 			// expressionList 
-			if (!parseExpressionListAndGenerateCode())
+			if (!parseExpressionListAndGenerateCode(subroutineCall))
 			{
 				throw exception("expected expresion list");
 			}
@@ -558,13 +555,14 @@ private:
 				throw exception("expected ')'");
 			}
 		}
-		//(className |varName) '.' subroutineName '(' expressionList ')' //this combinationa of tokens clearly express some class subrutine call
+		//(className |varName) '.' subroutineName '(' expressionList ')' //this combinationa of tokens clearly express some class's subrutine call
 		else if (tokenizer.isItHasTokens({ identifier, dot,identifier,roundL }))
 		{
-			codeGenerator.subroutineCallStart();
-			codeGenerator.soubroutineClassName(tokenizer.getToken(-4), tokenizer.getToken(-2));
+			//codeGenerator.subroutineCallStart();
+			//codeGenerator.soubroutineClassName(tokenizer.getToken(-4), tokenizer.getToken(-2));
+			SyntaxTree::NodePointer subroutineCall = syntaxTree.addNode({ tokenizer.getToken(-4), tokenizer.getToken(-2) }, parent);
 			// expressionList
-			if (!parseExpressionListAndGenerateCode())
+			if (!parseExpressionListAndGenerateCode(subroutineCall))
 			{
 				throw exception("expected expresion list");
 			}
@@ -578,22 +576,18 @@ private:
 		{
 			return false;
 		}
-
-		codeGenerator.subroutineCallEnd();
 		return true;
 	}
 	// '(' (expression (',' expression)* )? ')'
-	bool parseExpressionListAndGenerateCode()
+	bool parseExpressionListAndGenerateCode(SyntaxTree::NodePointer subroutineCall)
 	{
-		codeGenerator.expressionListStart();
-		if (parseExpressionAndGenerateCode())
+		if (parseExpressionAndGenerateCode(subroutineCall))
 		{
 			while (tokenizer.isItHasTokens(comma))
 			{
-				parseExpressionAndGenerateCode();
+				parseExpressionAndGenerateCode(subroutineCall);
 			}
 		}
-		codeGenerator.expressionListEnd();
 		return true;
 	}
 
