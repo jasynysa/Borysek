@@ -139,19 +139,14 @@
     </Link>
   </ItemDefinitionGroup>
   <ItemGroup>
-    <ClCompile Include="CodeGenerator.cpp" />
-    <ClCompile Include="Compiler.cpp" />
-    <ClCompile Include="NameMenager.cpp" />
-    <ClCompile Include="Parser.cpp" />
-    <ClCompile Include="Tokenizer.cpp" />
+    <ClCompile Include="Main.cpp" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="CodeGenerator.h" />
     <ClInclude Include="SyntaxTree.h" />
     <ClInclude Include="Compiler.h" />
-    <ClInclude Include="NameMenager.h" />
     <ClInclude Include="Token.h" />
-    <ClInclude Include="ParserAndCodeGenerator.h" />
+    <ClInclude Include="Parser.h" />
     <ClInclude Include="Tokenizer.h" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />

@@ -11,9 +11,12 @@ enum EnumToken
 };
 struct Token
 {
-	Token(EnumToken token, std::string wartosc) :
+	Token(EnumToken token, std::string wartosc, int nrLini) :
 		token(token),
-		value(wartosc) {}
+		value(wartosc),
+		nrLini(nrLini)
+	{}
 	EnumToken token;
 	std::string value;
+	int nrLini;
 };

@@ -1,4 +1,7 @@
 #pragma once
+#include "Token.h"
+#include "vector"
+using namespace std;
 class SyntaxTree
 {
 public:
@@ -14,7 +17,7 @@ private:
 		{
 			vektorTokenow.push_back(token);
 		}
-		Node(std::vector<Token> vektorTokenow, NodePointer Parent):
+		Node(std::vector<Token> vektorTokenow, NodePointer parent):
 			parent(parent),
 			vektorTokenow(vektorTokenow)
 		{}
@@ -72,7 +75,7 @@ public:
 		NodePointer parent = child->parent;
 
 		//deleting poiner form parent to child
-		for (std::vector<Node*>::iterator it = parent->vectorChildrens.begin(); it != parent->vectorChildrens.end(); it++)
+		for (std::vector<NodePointer>::iterator it = parent->vectorChildrens.begin(); it != parent->vectorChildrens.end(); it++)
 		{
 			if (*it == child)
 			{
@@ -82,12 +85,89 @@ public:
 		}
 
 		//adding new node to parent
-		NodePointer newNode = new Node(vektorTokenow, parent);
+		NodePointer newNode = addNode(vektorTokenow, parent);
 
 		//conecting child to new node
 		newNode->vectorChildrens.push_back(child);
 		child->parent = newNode;
 	}
+
+	bool isItVarName(const Token& identifier)
+	{
+		if (identifier.token != EnumToken::identifier)
+		{
+			throw exception("expected identifier"+ identifier.nrLini);
+		}
+
+		vector<NodePointer>vectorVariables = root->vectorChildrens[0]->vectorChildrens;
+
+		for (auto var : vectorVariables)
+		{
+			if (var->vektorTokenow[2].value == identifier.value)
+			{
+				return true;
+			}
+		}
+		return false;
+	}
+
+	bool isItSubroutinesName(const Token& identifier)
+	{
+		if (identifier.token != EnumToken::identifier)
+		{
+			throw exception("expected identifier");
+		}
+
+		vector<NodePointer>vectorSubroutinesName = root->vectorChildrens[1]->vectorChildrens;
+
+		for (auto subroutines : vectorSubroutinesName)
+		{
+			if (subroutines->vektorTokenow[1].value == identifier.value)
+			{
+				return true;
+			}
+		}
+		return false;
+	}
+
+	bool isItSubroutinesVariableName(const Token& identifier, NodePointer subroutinePtr)
+	{
+		if (identifier.token != EnumToken::identifier)
+		{
+			throw exception("expected identifier");
+		}
+
+
+		vector<NodePointer>vectorSubroutinesParameterName = subroutinePtr->vectorChildrens[0]->vectorChildrens;
+
+
+		for (auto subroutinesParameter : vectorSubroutinesParameterName)
+		{
+			if (subroutinesParameter->vektorTokenow[0].value == identifier.value)
+			{
+				return true;
+			}
+		}
+		//is it have local var list
+		if (subroutinePtr->vectorChildrens.size() >= 2)
+		{
+			if (subroutinePtr->vectorChildrens[1]->vectorChildrens.size() >= 1)
+			{
+				vector<NodePointer>vectorSubroutinesLocalName = subroutinePtr->vectorChildrens[1]->vectorChildrens[0]->vectorChildrens;
+
+				for (auto subroutinesLocal : vectorSubroutinesLocalName)
+				{
+					if (subroutinesLocal->vektorTokenow[0].value == identifier.value)
+					{
+						return true;
+					}
+				}
+			}
+		}
+		return false;
+	}
+	
+
 private:
 	NodePointer root;
 };

@@ -7,11 +7,10 @@
 using namespace std;
 
 class Tokenizer;
-typedef void(Tokenizer::* FPointer)();
+typedef void(Tokenizer::* FPointer)(int);
 class Tokenizer
 {
 public:
-	using tokenizerState = int;
 	Tokenizer(string adresZrodlo)
 	{		
 		try
@@ -123,24 +122,13 @@ public:
 		}
 	}
 
-	//save iterator of actual token
-	tokenizerState save()
-	{
-		return itVectorTokenow;
-	}
-
-	void restore(tokenizerState state)
-	{
-		itVectorTokenow =state;
-	}
-
 
 private:
 	std::ifstream plikHack;
 	std::vector<Token> vectorTokenow;
 	std::map<std::string, FPointer> mapaTokenowIFunkcji;
 	int itVectorTokenow = 0;
-	int itVectorTokenowSave;
+	//int itVectorTokenowSave;
 
 
 	inline void otwarciePliku(string scierzkaPlikHack)
@@ -166,6 +154,7 @@ private:
 
 		std::string slowo;
 		auto it = mapaTokenowIFunkcji.end();
+		int nrLini=1;
 		//wydobywanie slowa 		
 		for (int i = 0; i < length; i++)
 		{
@@ -182,11 +171,11 @@ private:
 				auto it = mapaTokenowIFunkcji.find(slowo);
 				if (it != mapaTokenowIFunkcji.end())//to jest slowo kluczowe
 				{
-					(this->*(it->second))();//wywolanie funkcji z mapy funkcji
+					(this->*(it->second))(nrLini);//wywolanie funkcji z mapy funkcji
 				}
 				else //to jest identyfikator
 				{
-					vectorTokenow.push_back(Token(identifier, slowo));
+					vectorTokenow.push_back(Token(identifier, slowo, nrLini));
 				}
 				slowo = "";
 			}
@@ -199,7 +188,7 @@ private:
 				} while ((kod[i] >= '0' && kod[i] <= '9'));
 				i--;
 				//zapisanie stalej liczny
-				vectorTokenow.push_back(Token(EnumToken::integerConstant, slowo));
+				vectorTokenow.push_back(Token(EnumToken::integerConstant, slowo, nrLini));
 				slowo = "";
 			}
 			else if (kod[i] == '"')//string
@@ -211,7 +200,7 @@ private:
 					i++;
 				}
 				i--;
-				vectorTokenow.push_back(Token(stringConstant, slowo));
+				vectorTokenow.push_back(Token(stringConstant, slowo,nrLini));
 				slowo = "";
 			}
 			else if (kod[i] == '/')//komentarz
@@ -227,7 +216,7 @@ private:
 			}
 			else if (!((it = mapaTokenowIFunkcji.find(std::string(1, kod[i]))) == mapaTokenowIFunkcji.end()))//symbol
 			{
-				(this->*(it->second))();//wywolanie funkcji zapisujacej znaleziony token
+				(this->*(it->second))(nrLini);//wywolanie funkcji zapisujacej znaleziony token
 			}
 			else if (kod[i] >= '!' && kod[i] <= '~')//nierozpoznany symbol
 			{
@@ -240,173 +229,179 @@ private:
 				throw(std::exception(("nie rozppoznano symbolu : " + slowo).c_str()));
 				slowo = "";
 			}
+			else if (kod[i] == '\n')//koniec lini
+			{
+				nrLini++;
+				//cout << nrLini;
+			}
 		}
 	}
+	
 	//funkcje( obslugujace( (znaleziony) token)). Powinny byc jako lambda ale mie wiem jak zdefiniowac wskaznik na funkcje lambda przechwytujaca pole kalsy
-	void tClass()
+	void tClass(int nrLini)
 	{
-		vectorTokenow.push_back(Token(clasS, ""));
+		vectorTokenow.push_back(Token(clasS, "", nrLini));
 	}
-	void tConstructor()
+	void tConstructor(int nrLini)
 	{
-		Token nowy(constructor, "");
+		Token nowy(constructor, "", nrLini);
 		vectorTokenow.push_back(nowy);
 	}
-	void tFunction()
+	void tFunction(int nrLini)
 	{
-		vectorTokenow.push_back(Token(function, ""));
+		vectorTokenow.push_back(Token(function, "", nrLini));
 	}
-	void tMethod()
+	void tMethod(int nrLini)
 	{
-		vectorTokenow.push_back(Token(method, ""));
+		vectorTokenow.push_back(Token(method, "", nrLini));
 	}
-	void tField()
+	void tField(int nrLini)
 	{
-		vectorTokenow.push_back(Token(field, ""));
+		vectorTokenow.push_back(Token(field, "", nrLini));
 	}
-	void tStatic()
+	void tStatic(int nrLini)
 	{
-		vectorTokenow.push_back(Token(statiC, ""));
+		vectorTokenow.push_back(Token(statiC, "", nrLini));
 	}
-	void tVar()
+	void tVar(int nrLini)
 	{
-		vectorTokenow.push_back(Token(var, ""));
+		vectorTokenow.push_back(Token(var, "", nrLini));
 	}
-	void tInt()
+	void tInt(int nrLini)
 	{
-		vectorTokenow.push_back(Token(inT, ""));
+		vectorTokenow.push_back(Token(inT, "", nrLini));
 	}
-	void tChar()
+	void tChar(int nrLini)
 	{
-		vectorTokenow.push_back(Token(chaR, ""));
+		vectorTokenow.push_back(Token(chaR, "", nrLini));
 	}
-	void tBoolean()
+	void tBoolean(int nrLini)
 	{
-		vectorTokenow.push_back(Token(boolean, ""));
+		vectorTokenow.push_back(Token(boolean, "", nrLini));
 	}
-	void tVoid()
+	void tVoid(int nrLini)
 	{
-		vectorTokenow.push_back(Token(voiD, ""));
+		vectorTokenow.push_back(Token(voiD, "", nrLini));
 	}
-	void tTrue()
+	void tTrue(int nrLini)
 	{
-		vectorTokenow.push_back(Token(truE, ""));
+		vectorTokenow.push_back(Token(truE, "", nrLini));
 	}
-	void tFalse()
+	void tFalse(int nrLini)
 	{
-		vectorTokenow.push_back(Token(falsE, ""));
+		vectorTokenow.push_back(Token(falsE, "", nrLini));
 	}
-	void tNull()
+	void tNull(int nrLini)
 	{
-		vectorTokenow.push_back(Token(nulL, ""));
+		vectorTokenow.push_back(Token(nulL, "", nrLini));
 	}
-	void tThis()
+	void tThis(int nrLini)
 	{
-		vectorTokenow.push_back(Token(thiS, ""));
+		vectorTokenow.push_back(Token(thiS, "", nrLini));
 	}
-	void tLet()
+	void tLet(int nrLini)
 	{
-		vectorTokenow.push_back(Token(leT, ""));
+		vectorTokenow.push_back(Token(leT, "", nrLini));
 	}
-	void tDo()
+	void tDo(int nrLini)
 	{
-		vectorTokenow.push_back(Token(dO, ""));
+		vectorTokenow.push_back(Token(dO, "", nrLini));
 	}
-	void tIf()
+	void tIf(int nrLini)
 	{
-		vectorTokenow.push_back(Token(iF, ""));
+		vectorTokenow.push_back(Token(iF, "", nrLini));
 	}
-	void tElse()
+	void tElse(int nrLini)
 	{
-		vectorTokenow.push_back(Token(elsE, ""));
+		vectorTokenow.push_back(Token(elsE, "", nrLini));
 	}
-	void tWhile()
+	void tWhile(int nrLini)
 	{
-		vectorTokenow.push_back(Token(whilE, ""));
+		vectorTokenow.push_back(Token(whilE, "", nrLini));
 	}
-	void tReturn()
+	void tReturn(int nrLini)
 	{
-		vectorTokenow.push_back(Token(returN, ""));
+		vectorTokenow.push_back(Token(returN, "", nrLini));
 	}
-	void tCurlyL()
+	void tCurlyL(int nrLini)
 	{
-		vectorTokenow.push_back(Token(curlyL, ""));
+		vectorTokenow.push_back(Token(curlyL, "", nrLini));
 	}
-	void tCurlyR()
+	void tCurlyR(int nrLini)
 	{
-		vectorTokenow.push_back(Token(curlyR, ""));
+		vectorTokenow.push_back(Token(curlyR, "", nrLini));
 	}
-	void tRoundL()
+	void tRoundL(int nrLini)
 	{
-		vectorTokenow.push_back(Token(roundL, ""));
+		vectorTokenow.push_back(Token(roundL, "", nrLini));
 	}
-	void tRoundR()
+	void tRoundR(int nrLini)
 	{
-		vectorTokenow.push_back(Token(roundR, ""));
+		vectorTokenow.push_back(Token(roundR, "", nrLini));
 	}
-	void tSquerL()
+	void tSquerL(int nrLini)
 	{
-		vectorTokenow.push_back(Token(squareL, ""));
+		vectorTokenow.push_back(Token(squareL, "", nrLini));
 	}
-	void tSquerR()
+	void tSquerR(int nrLini)
 	{
-		vectorTokenow.push_back(Token(squareR, ""));
+		vectorTokenow.push_back(Token(squareR, "", nrLini));
 	}
-	void tDot()
+	void tDot(int nrLini)
 	{
-		vectorTokenow.push_back(Token(dot, ""));
+		vectorTokenow.push_back(Token(dot, "", nrLini));
 	}
-	void tComma()
+	void tComma(int nrLini)
 	{
-		vectorTokenow.push_back(Token(comma, ""));
+		vectorTokenow.push_back(Token(comma, "", nrLini));
 	}
-	void tSemicolon()
+	void tSemicolon(int nrLini)
 	{
-		vectorTokenow.push_back(Token(semicolon, ""));
+		vectorTokenow.push_back(Token(semicolon, "", nrLini));
 	}
-	void tPlus()
+	void tPlus(int nrLini)
 	{
-		vectorTokenow.push_back(Token(EnumToken::plus, ""));
+		vectorTokenow.push_back(Token(EnumToken::plus, "", nrLini));
 	}
-	void tMinus()
+	void tMinus(int nrLini)
 	{
-		vectorTokenow.push_back(Token(EnumToken::minus, ""));
+		vectorTokenow.push_back(Token(EnumToken::minus, "",nrLini));
 	}
-	void tStar()
+	void tStar(int nrLini)
 	{
-		vectorTokenow.push_back(Token(star, ""));
+		vectorTokenow.push_back(Token(star, "", nrLini));
 	}
-	void tSlash()
+	void tSlash(int nrLini)
 	{
-		vectorTokenow.push_back(Token(slash, ""));
+		vectorTokenow.push_back(Token(slash, "", nrLini));
 	}
-	void tAmpersand()
+	void tAmpersand(int nrLini)
 	{
-		vectorTokenow.push_back(Token(ampersand, ""));
+		vectorTokenow.push_back(Token(ampersand, "", nrLini));
 	}
-	void tLine()
+	void tLine(int nrLini)
 	{
-		vectorTokenow.push_back(Token(line, ""));
+		vectorTokenow.push_back(Token(line, "", nrLini));
 	}
-	void tAngleL()
+	void tAngleL(int nrLini)
 	{
-		vectorTokenow.push_back(Token(angleL, ""));
+		vectorTokenow.push_back(Token(angleL, "", nrLini));
 	}
-	void tAngleR()
+	void tAngleR(int nrLini)
 	{
-		vectorTokenow.push_back(Token(angleR, ""));
+		vectorTokenow.push_back(Token(angleR, "", nrLini));
 	}
-	void tEqual()
+	void tEqual(int nrLini)
 	{
-		vectorTokenow.push_back(Token(EnumToken::equal, ""));
+		vectorTokenow.push_back(Token(EnumToken::equal, "", nrLini));
 	}
-	void tTylda()
+	void tTylda(int nrLini)
 	{
-		vectorTokenow.push_back(Token(tylda, ""));
+		vectorTokenow.push_back(Token(tylda, "", nrLini));
 	}
-	void tIntegerConstant()
+	void tIntegerConstant(int nrLini)
 	{
-		vectorTokenow.push_back(Token(integerConstant, ""));
+		vectorTokenow.push_back(Token(integerConstant, "", nrLini));
 	}
 	inline void wypelnianieMapy()
 	{
