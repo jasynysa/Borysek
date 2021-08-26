@@ -35,24 +35,24 @@ private:
 
 	inline void parsingAndCodeGenerating()
 	{
-		parseClassAndGenerateCode();
+		parseClass();
 	}
 
 	//'class' className '{' classVarDec* subroutineDec* '}'
-	void parseClassAndGenerateCode()
+	void parseClass()
 	{
 		//'class' className '{'
 		if (tokenizer.isItHasTokens({ EnumToken::clasS,identifier,curlyL }))
 		{
-			SyntaxTree::NodePointer parentClass = syntaxTree.addNode({ tokenizer.getToken(-3) });
+			SyntaxTree::NodePointer parentClass = syntaxTree.addNode({ tokenizer.getToken(-3), tokenizer.getToken(-2) }, "classDefinition");
 
-			SyntaxTree::NodePointer classVarsDefinitions = syntaxTree.addNode({}, parentClass);
+			SyntaxTree::NodePointer classVarsDefinitions = syntaxTree.addNode({}, parentClass, "classVariablesDefinition");
 			//classVarDef*
-			while (parseClassVariableDefinitionAndGenerateCode(classVarsDefinitions)) {}
+			while (parseClassVariableDefinition(classVarsDefinitions)) {}
 
-			SyntaxTree::NodePointer classSubroutinesDefinitions = syntaxTree.addNode({}, parentClass);
+			SyntaxTree::NodePointer classSubroutinesDefinitions = syntaxTree.addNode({}, parentClass,"calssSubroutinesDefinition" );
 			//subroutineDef*
-			while (parseClassSubroutineDefinitionAndGenerateCode(classSubroutinesDefinitions)) {}
+			while (parseClassSubroutineDefinition(classSubroutinesDefinitions)) {}
 
 			//'}'
 			if (!tokenizer.isItHasTokens(vector<EnumToken>{curlyR }))
@@ -72,7 +72,7 @@ private:
 	}
 
 	//('static' | 'field') type varName(',' varName) * ';'
-	bool parseClassVariableDefinitionAndGenerateCode(SyntaxTree::NodePointer classVariablesDefinitions)
+	bool parseClassVariableDefinition(SyntaxTree::NodePointer classVariablesDefinitions)
 	{
 		//('static' | 'field')
 		if (!tokenizer.isItHasTokens([](EnumToken t) {return t == statiC || t == field; }))
@@ -93,8 +93,8 @@ private:
 					s << "line: " << tokenizer.getToken(-1).nrLini << " variable identifier '" << tokenizer.getToken(-1).value << "' already exist";
 					throw exception(s.str().c_str());
 				}
-				//deklaracja zmiennej
-				syntaxTree.addNode({ kind,typ,tokenizer.getToken(-1) }, classVariablesDefinitions);
+				//definicja zmiennej
+				syntaxTree.addNode({ kind,typ,tokenizer.getToken(-1) }, classVariablesDefinitions,"classVabiableDefinition");
 			} while (tokenizer.isItHasTokens({ comma,identifier }));
 			//';'
 			if (!tokenizer.isItHasTokens(vector<EnumToken>{ EnumToken::semicolon }))
@@ -115,7 +115,7 @@ private:
 	}
 
 	//('constructor' | 'function' | 'method') ('void' | type) subroutineName parameterList subroutineBody
-	bool parseClassSubroutineDefinitionAndGenerateCode(SyntaxTree::NodePointer classSubroutinesDefinitions)
+	bool parseClassSubroutineDefinition(SyntaxTree::NodePointer classSubroutinesDefinitions)
 	{
 		//('constructor' | 'function' | 'method')
 		if (!tokenizer.isItHasTokens([](EnumToken t) {return t == constructor || t == function || t == method ? true : false; }))
@@ -137,17 +137,17 @@ private:
 			throw exception(s.str().c_str());
 		}
 		//codeGenerator.classSoubroutineDefinitionStart(tokenizer.getToken(-2), tokenizer.getToken(-1));
-		SyntaxTree::NodePointer subroutine = syntaxTree.addNode({ tokenizer.getToken(-3), tokenizer.getToken(-2), tokenizer.getToken(-1) }, classSubroutinesDefinitions);
+		SyntaxTree::NodePointer subroutine = syntaxTree.addNode({ tokenizer.getToken(-3), tokenizer.getToken(-2), tokenizer.getToken(-1) }, classSubroutinesDefinitions, "calssSubroutineDefinition");
 
 		//parameterList
-		if (!parseParameterListAndGenerateCode(subroutine))
+		if (!parseParameterList(subroutine))
 		{
 			stringstream s;
 			s << "line: " << tokenizer.getToken(-1).nrLini << " parameter list expected";
 			throw exception(s.str().c_str());
 		}
 		//subroutineBody
-		if (!parseSubroutineBodyAndGenerateCode(subroutine))
+		if (!parseSubroutineBody(subroutine))
 		{
 			stringstream s;
 			s << "line: " << tokenizer.getToken(-1).nrLini << " sobroutine body expected";
@@ -159,14 +159,14 @@ private:
 	}
 
 	//'(' ( type varName (',' type varName)* )? ')'
-	bool parseParameterListAndGenerateCode(SyntaxTree::NodePointer subroutine)
+	bool parseParameterList(SyntaxTree::NodePointer subroutine)
 	{
 		// '(' type varName
 		if (!tokenizer.isItHasTokens(roundL))
 		{
 			return false;
 		}
-		SyntaxTree::NodePointer parameterList = syntaxTree.addNode({}, subroutine);
+		SyntaxTree::NodePointer parameterList = syntaxTree.addNode({}, subroutine, "parameterList");
 		if (tokenizer.isItHasTokens({ isType, [](EnumToken t) {return t == identifier; } }))
 		{
 			do
@@ -178,7 +178,7 @@ private:
 					throw exception(s.str().c_str());
 				}
 				//codeGenerator.parameterDefinition(tokenizer.getToken(-2), tokenizer.getToken(-1));
-				syntaxTree.addNode({ tokenizer.getToken(-2),tokenizer.getToken(-1) }, parameterList);
+				syntaxTree.addNode({ tokenizer.getToken(-2),tokenizer.getToken(-1) }, parameterList, "parameterDefinition");
 
 				//(',' type varName)*
 			} while (tokenizer.isItHasTokens({ [](EnumToken t) {return t == comma; },isType,[](EnumToken t) {return t == identifier; } }));
@@ -195,22 +195,22 @@ private:
 	}
 
 	//'{' varDec* statement* '}'
-	bool parseSubroutineBodyAndGenerateCode(SyntaxTree::NodePointer subroutine)
+	bool parseSubroutineBody(SyntaxTree::NodePointer subroutine)
 	{
 		//'{'
 		if (!tokenizer.isItHasTokens(curlyL))
 		{
 			return false;
 		}
-		SyntaxTree::NodePointer subroutineBody = syntaxTree.addNode({}, subroutine);
+		SyntaxTree::NodePointer subroutineBody = syntaxTree.addNode({}, subroutine, "subroutineBody");
 
-		SyntaxTree::NodePointer localVarsDefinitions = syntaxTree.addNode({}, subroutineBody);
+		SyntaxTree::NodePointer localVarsDefinitions = syntaxTree.addNode({}, subroutineBody,"localVariables Definitions");
 		//varDec*
-		while (parseSubroutinesVariablesDefinitionAndGenerateCode(localVarsDefinitions)) {}
+		while (parseSubroutinesVariablesDefinition(localVarsDefinitions)) {}
 
-		SyntaxTree::NodePointer statemants = syntaxTree.addNode({}, subroutineBody);
+		SyntaxTree::NodePointer statemants = syntaxTree.addNode({}, subroutineBody,"statmants");
 		//statement*
-		while (parseStatemantAndGenerateCode(statemants)) {}
+		while (parseStatemant(statemants)) {}
 
 		//'}'
 		if (!tokenizer.isItHasTokens(curlyR))
@@ -223,7 +223,7 @@ private:
 	}
 
 	//'var' type varName (',' varName)* ';'
-	bool parseSubroutinesVariablesDefinitionAndGenerateCode(SyntaxTree::NodePointer localVariablesDefinitions)
+	bool parseSubroutinesVariablesDefinition(SyntaxTree::NodePointer localVariablesDefinitions)
 	{
 		//'var'
 		if (!tokenizer.isItHasTokens(var))
@@ -245,7 +245,7 @@ private:
 				s << "line: " << tokenizer.getToken(-1).nrLini << "subroutine's variable identifier '" << tokenizer.getToken(-1).value << "' already exist";
 				throw exception(s.str().c_str());
 			}
-			syntaxTree.addNode({ tokenizer.getToken(-2), tokenizer.getToken(-1) }, localVariablesDefinitions);
+			syntaxTree.addNode({ tokenizer.getToken(-2), tokenizer.getToken(-1) }, localVariablesDefinitions, "localVariableDefinition");
 
 			//(',' varName)*
 		} while (tokenizer.isItHasTokens({ comma,identifier }));
@@ -261,25 +261,25 @@ private:
 	}
 
 	//letStatement | ifStatement | whileStatement |	doStatement | returnStatement
-	bool parseStatemantAndGenerateCode(SyntaxTree::NodePointer statemants)
+	bool parseStatemant(SyntaxTree::NodePointer statemants)
 	{
-		if (parseLetStatemantAndGenerateCode(statemants))
+		if (parseLetStatemant(statemants))
 		{
 			return true;
 		}
-		else if (parseIfStatemantAndGenerateCode(statemants))
+		else if (parseIfStatemant(statemants))
 		{
 			return true;
 		}
-		else if (parseWhileStatemantAndGenerateCode(statemants))
+		else if (parseWhileStatemant(statemants))
 		{
 			return true;
 		}
-		else if (parseDoStatemantAndGenerateCode(statemants))
+		else if (parseDoStatemant(statemants))
 		{
 			return true;
 		}
-		else if (parseReturnStatemantAndGenerateCode(statemants))
+		else if (parseReturnStatemant(statemants))
 		{
 			return true;
 		}
@@ -290,14 +290,14 @@ private:
 	}
 
 	//'let' varSelect '=' expression ';'
-	bool parseLetStatemantAndGenerateCode(SyntaxTree::NodePointer statemants)
+	bool parseLetStatemant(SyntaxTree::NodePointer statemants)
 	{
 		// 'let'
 		if (!tokenizer.isItHasTokens(leT))
 		{
 			return false;
 		}
-		SyntaxTree::NodePointer letStatemant = syntaxTree.addNode({ tokenizer.getToken(-1) }, statemants);
+		SyntaxTree::NodePointer letStatemant = syntaxTree.addNode({ tokenizer.getToken(-1) }, statemants, "letStatemant");
 
 		//varSelect
 		if (!parseVarSelect(letStatemant))
@@ -314,7 +314,7 @@ private:
 			throw exception(s.str().c_str());
 		}
 		// expression
-		if (!parseExpressionAndGenerateCode(letStatemant))
+		if (!parseExpression(letStatemant))
 		{
 			stringstream s;
 			s << "line: " << tokenizer.getToken(-1).nrLini << "expected expresion";
@@ -333,12 +333,12 @@ private:
 
 	//'if' '(' expression ')' '{' statements '}'
 	//('else' '{' statements '}') ?
-	bool parseIfStatemantAndGenerateCode(SyntaxTree::NodePointer statemants) //another style of 'if' structure
+	bool parseIfStatemant(SyntaxTree::NodePointer statemants) //another style of 'if' structure
 	{
 		if (tokenizer.isItHasTokens(iF))
 		{
 			//codeGenerator.ifStatemantStart();
-			SyntaxTree::NodePointer ifStatemant = syntaxTree.addNode({ tokenizer.getToken(-1) }, statemants);
+			SyntaxTree::NodePointer ifStatemant = syntaxTree.addNode({ tokenizer.getToken(-1) }, statemants, "ifStatemant");
 
 			if (!tokenizer.isItHasTokens(roundL))
 			{
@@ -347,7 +347,7 @@ private:
 				throw exception(s.str().c_str());
 				throw exception("expected '('");
 			}
-			if (!parseExpressionAndGenerateCode(ifStatemant))
+			if (!parseExpression(ifStatemant))
 			{
 				stringstream s;
 				s << "line: " << tokenizer.getToken(-1).nrLini << "expected expression";
@@ -363,7 +363,7 @@ private:
 				s << "line: " << tokenizer.getToken(-1).nrLini << "expected '{'";
 				throw exception(s.str().c_str());
 			}
-			if (!parseStatemantAndGenerateCode(ifStatemant))
+			if (!parseStatemant(ifStatemant))
 			{
 				stringstream s;
 				s << "line: " << tokenizer.getToken(-1).nrLini << "expected statemant";
@@ -383,7 +383,7 @@ private:
 					s << "line: " << tokenizer.getToken(-1).nrLini << "expected '{'";
 					throw exception(s.str().c_str());
 				}
-				if (!parseStatemantAndGenerateCode(ifStatemant))
+				if (!parseStatemant(ifStatemant))
 				{
 					stringstream s;
 					s << "line: " << tokenizer.getToken(-1).nrLini << "expected statemant";
@@ -402,16 +402,16 @@ private:
 	}
 
 	// 'while' '(' expression ')' '{' statements '}'
-	bool parseWhileStatemantAndGenerateCode(SyntaxTree::NodePointer statemants)
+	bool parseWhileStatemant(SyntaxTree::NodePointer statemants)
 	{
 		if (tokenizer.isItHasTokens(whilE))
 		{
-			SyntaxTree::NodePointer whileStatemant = syntaxTree.addNode({ tokenizer.getToken(-1) }, statemants);
+			SyntaxTree::NodePointer whileStatemant = syntaxTree.addNode({ tokenizer.getToken(-1) }, statemants, "whileStatemant");
 			if (!tokenizer.isItHasTokens(roundL))
 			{
 				throw exception("expected '('");
 			}
-			if (!parseExpressionAndGenerateCode(whileStatemant))
+			if (!parseExpression(whileStatemant))
 			{
 				stringstream s;
 				s << "line: " << tokenizer.getToken(-1).nrLini << "expected expression";
@@ -427,7 +427,7 @@ private:
 				s << "line: " << tokenizer.getToken(-1).nrLini << "expected '{'";
 				throw exception(s.str().c_str());
 			}
-			if (!parseStatemantAndGenerateCode(whileStatemant))
+			if (!parseStatemant(whileStatemant))
 			{
 				stringstream s;
 				s << "line: " << tokenizer.getToken(-1).nrLini << "expected statemant";
@@ -445,13 +445,13 @@ private:
 	}
 
 	// 'do' subroutineCall ';'
-	bool parseDoStatemantAndGenerateCode(SyntaxTree::NodePointer statemants)
+	bool parseDoStatemant(SyntaxTree::NodePointer statemants)
 	{
 		if (tokenizer.isItHasTokens(dO))
 		{
-			SyntaxTree::NodePointer doStatemant = syntaxTree.addNode({ tokenizer.getToken(-1) }, statemants);
+			SyntaxTree::NodePointer doStatemant = syntaxTree.addNode({ tokenizer.getToken(-1) }, statemants, "doStatemant");
 
-			if (!parseSubroutineCallAndGenerateCode(doStatemant))
+			if (!parseSubroutineCall(doStatemant))
 			{
 				stringstream s;
 				s << "line: " << tokenizer.getToken(-1).nrLini << "expected subroutineCall";
@@ -467,13 +467,13 @@ private:
 	}
 
 	// 'return' expression? ';'
-	bool parseReturnStatemantAndGenerateCode(SyntaxTree::NodePointer statemants)
+	bool parseReturnStatemant(SyntaxTree::NodePointer statemants)
 	{
 		if (tokenizer.isItHasTokens(returN))
 		{
-			SyntaxTree::NodePointer returnStatemant = syntaxTree.addNode({ tokenizer.getToken(-1) }, statemants);
+			SyntaxTree::NodePointer returnStatemant = syntaxTree.addNode({ tokenizer.getToken(-1) }, statemants, "returnStatemant");
 
-			parseExpressionAndGenerateCode(returnStatemant);
+			parseExpression(returnStatemant);
 			if (!tokenizer.isItHasTokens(semicolon))
 			{
 				throw exception("expected ';'");
@@ -491,12 +491,12 @@ private:
 		{
 			return false;
 		}
-		SyntaxTree::NodePointer varSelect = syntaxTree.addNode({ tokenizer.getToken(-1) }, parent);
+		SyntaxTree::NodePointer varSelect = syntaxTree.addNode({ tokenizer.getToken(-1) }, parent, "variableSelection");
 
 		// ('[' expression ']') ?
 		if (tokenizer.isItHasTokens(squareL))
 		{
-			if (!parseExpressionAndGenerateCode(varSelect))
+			if (!parseExpression(varSelect))
 			{
 				stringstream s;
 				s << "line: " << tokenizer.getToken(-1).nrLini << "expretion required";
@@ -510,25 +510,25 @@ private:
 		return true;
 	}
 	//term (op term)*
-	bool parseExpressionAndGenerateCode(SyntaxTree::NodePointer parent)
+	bool parseExpression(SyntaxTree::NodePointer parent)
 	{
 		//saving state of CG prewent from incorect code generating during parsing proces which in the end ocure incorect
 		//saving state of tokenizer alowe to restor palce where parsing prooces begun
 		/*auto codeGeneratorState = codeGenerator.save();
 		auto tokenizerState = tokenizer.save();
 		codeGenerator.expretionStart();	*/
-		SyntaxTree::NodePointer expretion = syntaxTree.addNode({}, parent);
+		SyntaxTree::NodePointer expretion = syntaxTree.addNode({}, parent, "expretion");
 		//term
-		if (!parseTermAndGenerateCode(expretion))
+		if (!parseTerm(expretion))
 		{
 			return false;
 		}
 
 		//(op term)*
-		while (parseOpAndGenerateCode(expretion))
+		while (parseOp(expretion))
 		{
 
-			if (!parseTermAndGenerateCode(expretion->getChild(0)))
+			if (!parseTerm(expretion->getChild(0)))
 			{
 				stringstream s;
 				s << "line: " << tokenizer.getToken(-1).nrLini << "expected term";
@@ -540,22 +540,22 @@ private:
 	// integerConstant | stringConstant | keywordConstant |	
 	// varName | varName '[' expression ']' | subroutineCall |
 	//	'(' expression ')' | unaryOp term
-	bool parseTermAndGenerateCode(SyntaxTree::NodePointer parent)
+	bool parseTerm(SyntaxTree::NodePointer parent)
 	{
 		// integerConstant | stringConstant
 		if (tokenizer.isItHasTokens([](EnumToken t) {return t == integerConstant || t == stringConstant; }))
 		{
-			syntaxTree.addNode({ tokenizer.getToken(-1) }, parent);
+			syntaxTree.addNode({ tokenizer.getToken(-1) }, parent, "integerConstant");
 			return true;
 		}
 		// keywordConstant -> 'true'|'false'|'null'|'this'
 		else if (tokenizer.isItHasTokens([](EnumToken t) {return  t == truE || t == falsE || t == nulL || t == thiS; }))
 		{
-			syntaxTree.addNode({ tokenizer.getToken(-1) }, parent);
+			syntaxTree.addNode({ tokenizer.getToken(-1) }, parent,"keywordConstant");
 			return true;
 		}
 		// subroutineCall
-		else if (parseSubroutineCallAndGenerateCode(parent))
+		else if (parseSubroutineCall(parent))
 		{
 			return true;
 		}
@@ -567,7 +567,7 @@ private:
 		// '(' expression ')'
 		else if (tokenizer.isItHasTokens(roundL))
 		{
-			if (!parseExpressionAndGenerateCode(parent))
+			if (!parseExpression(parent))
 			{
 				stringstream s;
 				s << "line: " << tokenizer.getToken(-1).nrLini << "expected expression";
@@ -584,8 +584,8 @@ private:
 		else if (tokenizer.isItHasTokens({ EnumToken::minus,tylda }))
 		{
 			//codeGenerator.unaryOperator(tokenizer.getToken(-1));
-			SyntaxTree::NodePointer unaryOp = syntaxTree.addNode({ tokenizer.getToken(-1) }, parent);
-			if (!parseTermAndGenerateCode(unaryOp))
+			SyntaxTree::NodePointer unaryOp = syntaxTree.addNode({ tokenizer.getToken(-1) }, parent, "unaryOperator");
+			if (!parseTerm(unaryOp))
 			{
 				stringstream s;
 				s << "line: " << tokenizer.getToken(-1).nrLini << "expected term";
@@ -599,27 +599,27 @@ private:
 		}
 	}
 	//'+'|'-'|'*'|'/'|'&'|'|'|'<'|'>'|'='
-	bool parseOpAndGenerateCode(SyntaxTree::NodePointer parent)
+	bool parseOp(SyntaxTree::NodePointer parent)
 	{
 		if (tokenizer.isItHasTokens([](EnumToken t) {return (t == EnumToken::plus || t == EnumToken::minus || t == star || t == slash || t == ampersand || t == line || t == angleL || t == angleR || t == EnumToken::equal); }))
 		{
-			syntaxTree.pushOver({ tokenizer.getToken(-1) }, parent->getChild(0));
+			syntaxTree.pushOver({ tokenizer.getToken(-1) }, parent->getChild(0), "operetor");
 			return true;
 		}
 		return false;
 	}
 	// subroutineName '(' expressionList ')' | 
 	// (className |varName) '.' subroutineName '(' expressionList ')'
-	bool parseSubroutineCallAndGenerateCode(SyntaxTree::NodePointer parent)
+	bool parseSubroutineCall(SyntaxTree::NodePointer parent)
 	{
 
 		// subroutineName '('		//this combinationa of tokens clearly express subrutine call
 		if (tokenizer.isItHasTokens({ identifier,roundL }))
 		{
-			SyntaxTree::NodePointer subroutineCall = syntaxTree.addNode({ tokenizer.getToken(-2) }, parent);
+			SyntaxTree::NodePointer subroutineCall = syntaxTree.addNode({ tokenizer.getToken(-2) }, parent, "subroutineCall");
 			//codeGenerator.soubroutineName(tokenizer.getToken(-2));
 			// expressionList 
-			if (!parseExpressionListAndGenerateCode(subroutineCall))
+			if (!parseExpressionList(subroutineCall))
 			{
 				stringstream s;
 				s << "line: " << tokenizer.getToken(-1).nrLini << "expected expresion list";
@@ -636,9 +636,9 @@ private:
 		{
 			//codeGenerator.subroutineCallStart();
 			//codeGenerator.soubroutineClassName(tokenizer.getToken(-4), tokenizer.getToken(-2));
-			SyntaxTree::NodePointer subroutineCall = syntaxTree.addNode({ tokenizer.getToken(-4), tokenizer.getToken(-2) }, parent);
+			SyntaxTree::NodePointer subroutineCall = syntaxTree.addNode({ tokenizer.getToken(-4), tokenizer.getToken(-2) }, parent,"calssSubroutineCall");
 			// expressionList
-			if (!parseExpressionListAndGenerateCode(subroutineCall))
+			if (!parseExpressionList(subroutineCall))
 			{
 				stringstream s;
 				s << "line: " << tokenizer.getToken(-1).nrLini << "expected expresion list";
@@ -657,13 +657,13 @@ private:
 		return true;
 	}
 	// '(' (expression (',' expression)* )? ')'
-	bool parseExpressionListAndGenerateCode(SyntaxTree::NodePointer subroutineCall)
+	bool parseExpressionList(SyntaxTree::NodePointer subroutineCall)
 	{
-		if (parseExpressionAndGenerateCode(subroutineCall))
+		if (parseExpression(subroutineCall))
 		{
 			while (tokenizer.isItHasTokens(comma))
 			{
-				parseExpressionAndGenerateCode(subroutineCall);
+				parseExpression(subroutineCall);
 			}
 		}
 		return true;

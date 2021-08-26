@@ -12,14 +12,15 @@ private:
 	class Node
 	{
 	public:
-		Node(Token token, NodePointer parent):
+		Node(Token token, NodePointer parent, string name):
 			parent(parent)
 		{
-			vektorTokenow.push_back(token);
+			vektorTokens.push_back(token);
 		}
-		Node(std::vector<Token> vektorTokenow, NodePointer parent):
+		Node(std::vector<Token> vektorTokenow, NodePointer parent, string name):
 			parent(parent),
-			vektorTokenow(vektorTokenow)
+			vektorTokens(vektorTokenow),
+			name(name)
 		{}
 
 		NodePointer getChild(int index)
@@ -27,7 +28,8 @@ private:
 			return vectorChildrens[index];
 		}
 
-		std::vector<Token> vektorTokenow;
+		string name;
+		std::vector<Token> vektorTokens;
 		Node* parent;
 		std::vector<Node*> vectorChildrens;
 	};
@@ -37,15 +39,15 @@ public:
 	SyntaxTree() :
 		root(NULL)
 	{}
-	NodePointer addNode(const std::vector<Token>& token, NodePointer parent)
+	NodePointer addNode(const std::vector<Token>& token, NodePointer parent, string name)
 	{
-		NodePointer child = new Node(token, parent);
+		NodePointer child = new Node(token, parent, name);
 		parent->vectorChildrens.push_back(child);
 		return child;
 	}
-	NodePointer addNode(const std::vector<Token>& token) //ading root node
+	NodePointer addNode(const std::vector<Token>& token, string name) //ading root node
 	{		
-		root = new Node(token, NULL);
+		root = new Node(token, NULL, name);
 		return root;
 	}
 	void removeNode(NodePointer  node)
@@ -70,7 +72,7 @@ public:
 		return root;
 	}
 
-	void pushOver(std::vector<Token> vektorTokenow, NodePointer child)
+	void pushOver(std::vector<Token> vektorTokenow, NodePointer child, string name)
 	{
 		NodePointer parent = child->parent;
 
@@ -85,7 +87,7 @@ public:
 		}
 
 		//adding new node to parent
-		NodePointer newNode = addNode(vektorTokenow, parent);
+		NodePointer newNode = addNode(vektorTokenow, parent, name);
 
 		//conecting child to new node
 		newNode->vectorChildrens.push_back(child);
@@ -103,7 +105,7 @@ public:
 
 		for (auto var : vectorVariables)
 		{
-			if (var->vektorTokenow[2].value == identifier.value)
+			if (var->vektorTokens[2].value == identifier.value)
 			{
 				return true;
 			}
@@ -122,7 +124,7 @@ public:
 
 		for (auto subroutines : vectorSubroutinesName)
 		{
-			if (subroutines->vektorTokenow[1].value == identifier.value)
+			if (subroutines->vektorTokens[1].value == identifier.value)
 			{
 				return true;
 			}
@@ -143,7 +145,7 @@ public:
 
 		for (auto subroutinesParameter : vectorSubroutinesParameterName)
 		{
-			if (subroutinesParameter->vektorTokenow[0].value == identifier.value)
+			if (subroutinesParameter->vektorTokens[0].value == identifier.value)
 			{
 				return true;
 			}
@@ -157,7 +159,7 @@ public:
 
 				for (auto subroutinesLocal : vectorSubroutinesLocalName)
 				{
-					if (subroutinesLocal->vektorTokenow[0].value == identifier.value)
+					if (subroutinesLocal->vektorTokens[0].value == identifier.value)
 					{
 						return true;
 					}

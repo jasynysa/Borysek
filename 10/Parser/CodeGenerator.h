@@ -261,19 +261,31 @@ private:
 	}
 	void drawNode(SyntaxTree::NodePointer node, int deep)
 	{
-		codeXML += tabulacja(deep) + "<Node";
-		for (auto token : node->vektorTokenow)
-		{
-			codeXML += " "+tokenyNazwa[token.token];
-		}
-		codeXML += ">\n";
+		codeXML += tabulacja(deep) + "<" + node->name;
 
-		int childNodeDeep = deep + 1;
-		for (auto nodePointer : node->vectorChildrens)
+		for (auto token : node->vektorTokens)
 		{
-			drawNode(nodePointer, childNodeDeep);
+			codeXML += " " + tokenyNazwa[token.token]+ "= \"" + token.value + "\"";
 		}
-		codeXML += tabulacja(deep) + "</Node>\n";
+
+
+
+		if (node->vectorChildrens.size() == 0)
+		{
+			codeXML += " />\n";
+		}
+		else
+		{
+			codeXML += ">\n";
+
+			int childNodeDeep = deep + 1;
+			for (auto nodePointer : node->vectorChildrens)
+			{
+				drawNode(nodePointer, childNodeDeep);
+			}
+			codeXML += tabulacja(deep) + "</"+node->name+">\n";
+		}
+
 	}
 	string tabulacja(int glebokosc)
 	{
