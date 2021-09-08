@@ -15,21 +15,21 @@ private:
 		Node(Token token, NodePointer parent, string name):
 			parent(parent)
 		{
-			vektorTokens.push_back(token);
+			vectorTokens.push_back(token);
 		}
 		Node(std::vector<Token> vektorTokenow, NodePointer parent, string name):
 			parent(parent),
-			vektorTokens(vektorTokenow),
+			vectorTokens(vektorTokenow),
 			name(name)
 		{}
 
-		NodePointer getChild(int index)
+		/*NodePointer getChild(int index)
 		{
 			return vectorChildrens[index];
-		}
+		}*/
 
 		string name;
-		std::vector<Token> vektorTokens;
+		std::vector<Token> vectorTokens;
 		Node* parent;
 		std::vector<Node*> vectorChildrens;
 	};
@@ -105,7 +105,7 @@ public:
 
 		for (auto var : vectorVariables)
 		{
-			if (var->vektorTokens[2].value == identifier.value)
+			if (var->vectorTokens[2].value == identifier.value)
 			{
 				return true;
 			}
@@ -124,7 +124,7 @@ public:
 
 		for (auto subroutines : vectorSubroutinesName)
 		{
-			if (subroutines->vektorTokens[1].value == identifier.value)
+			if (subroutines->vectorTokens[1].value == identifier.value)
 			{
 				return true;
 			}
@@ -145,7 +145,7 @@ public:
 
 		for (auto subroutinesParameter : vectorSubroutinesParameterName)
 		{
-			if (subroutinesParameter->vektorTokens[0].value == identifier.value)
+			if (subroutinesParameter->vectorTokens[0].value == identifier.value)
 			{
 				return true;
 			}
@@ -159,7 +159,7 @@ public:
 
 				for (auto subroutinesLocal : vectorSubroutinesLocalName)
 				{
-					if (subroutinesLocal->vektorTokens[0].value == identifier.value)
+					if (subroutinesLocal->vectorTokens[0].value == identifier.value)
 					{
 						return true;
 					}

@@ -204,7 +204,7 @@ private:
 		}
 		SyntaxTree::NodePointer subroutineBody = syntaxTree.addNode({}, subroutine, "subroutineBody");
 
-		SyntaxTree::NodePointer localVarsDefinitions = syntaxTree.addNode({}, subroutineBody,"localVariables Definitions");
+		SyntaxTree::NodePointer localVarsDefinitions = syntaxTree.addNode({}, subroutineBody,"localVariablesDefinitions");
 		//varDec*
 		while (parseSubroutinesVariablesDefinition(localVarsDefinitions)) {}
 

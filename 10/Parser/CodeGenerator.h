@@ -14,10 +14,9 @@ public:
 	{
 		openFile(scierzkaWyjscia);
 		generateXml();
-		writeToFile();
-	}
-
-	
+		generateVM();
+		writeXMLToFile();
+	}	
 
 	//void classDefinitionStart(string identifier)
 	//{
@@ -263,7 +262,7 @@ private:
 	{
 		codeXML += tabulacja(deep) + "<" + node->name;
 
-		for (auto token : node->vektorTokens)
+		for (auto token : node->vectorTokens)
 		{
 			codeXML += " " + tokenyNazwa[token.token]+ "= \"" + token.value + "\"";
 		}
@@ -296,7 +295,128 @@ private:
 		}
 		return tab;
 	}
+
+	inline void generateVM()
+	{
+		SyntaxTree::NodePointer root = syntaxTree.getRoot();
+		className = root->vectorTokens[0].value;
+
+		for (auto subroutineDefinition : root->vectorChildrens[1]->vectorChildrens)
+		{
+			generateSubroutineDefinition(subroutineDefinition);
+		}
+	}
+	void generateSubroutineDefinition(SyntaxTree::NodePointer subroutineDefinition)
+	{
+		string functionName = subroutineDefinition->vectorTokens[1].value;
+		int localsQuantity = getSubroutineLocalsQuantity(subroutineDefinition);
+
+		writeFunctionDefinition(functionName, localsQuantity);
+
+		generateStatemants(subroutineDefinition->vectorChildrens[1]->vectorChildrens[1]);
+	}
+	void generateStatemants(SyntaxTree::NodePointer statemants)
+	{
+		for (auto statemant : statemants->vectorChildrens)
+		{
+			generateStatemant(statemant);
+		}
+	}
+	void generateStatemant(SyntaxTree::NodePointer statemant)
+	{
+		if (statemant->name == "letStatemant")
+		{
+			generateLetStatemant(statemant);
+		}
+		else if (statemant->name == "doStatemant")
+		{
+			generateDoStatemant(statemant);
+		}
+		else if (statemant->name == "ifStatemant")
+		{
+			generateIfStatemant(statemant);
+		}
+		else if (statemant->name == "ifStatemant")
+		{
+			generateIfStatemant(statemant);
+		}
+		else if (statemant->name == "WhileStatemant")
+		{
+			generateWhileStatemant(statemant);
+		}
+		else if (statemant->name == "returnStatemant")
+		{
+			generateReturnStatemant(statemant);
+		}
+	}
+
+	void generateLetStatemant(SyntaxTree::NodePointer statemant)
+	{
+		generateExpretion(statemant->vectorChildrens[1]);
+		generateVariableSelection(statemant->vectorChildrens[0]);
+	}
+	void generateDoStatemant(SyntaxTree::NodePointer statemant)
+	{
+		for (auto expretion : statemant->vectorChildrens[0]->vectorChildrens)
+		{
+			generateExpretion(expretion);
+		}
+		string functionName = statemant->vectorChildrens[0]->vectorTokens[0].value;
+		int argumentsQuantity = getSubroutinesArgumentQuantity(functionName);
+		writeFunctionCall(functionName, argumentsQuantity);
+	}
+	void generateIfStatemant(SyntaxTree::NodePointer statemant)
+	{
+		generateExpretion(statemant->vectorChildrens[0]);
+		string label = generateLabel();
+		writeAritmethic();//negacja
+		writeIfGoTo(label);
+		generateStatemants(statemant->vectorChildrens[1]);
+		writeLabel(label);
+	}
+	void generateWhileStatemant(SyntaxTree::NodePointer statemant)
+	{
+		string labelStart = generateLabel();
+		string labelEnd = generateLabel();
+
+		writeLabel(labelStart);
+		generateExpretion(statemant->vectorChildrens[0]);
+		writeAritmethic();//negacja
+		writeIfGoTo(labelEnd);
+		generateStatemants(statemant->vectorChildrens[1]);
+		writeGoTo(labelStart);
+		writeLabel(labelEnd);
+	}
+	void generateReturnStatemant(SyntaxTree::NodePointer statemant)
+	{
+		generateExpretion(statemant->vectorChildrens[0]);
+		writeReturn();
+	}
+	void generateExpretion(SyntaxTree::NodePointer expretion)
+	{
+
+	}
+	void generateVariableSelection(SyntaxTree::NodePointer variableSelection)
+	{
+
+	}
+
+
+	int getSubroutinesArgumentQuantity(string name)
+	{
+
+	}
 	
+	int getSubroutineLocalsQuantity(SyntaxTree::NodePointer subroutineDefinition)
+	{
+
+	}
+	string generateLabel()
+	{
+		static int labelQuantity = 0;
+		return "label_" + labelQuantity++;
+	}
+
 	//funkcja zwraca nazwe typu (typ moze byc wbudowany, lub zdefiniowany przez uzytkownika)
 	const string& typeName(const Token& t)
 	{
@@ -310,50 +430,51 @@ private:
 			throw std::exception(("nie mozna otworzyc pliku : " + scierzkaWyjscia).c_str());
 		}
 	}
-	void writeToFile()
+	void writeXMLToFile()
 	{
 		plikWyjsciowyXML << codeXML;
 	}
 
-	//using MemorySegment = string;
-	//using Arithmetic = string;
+	using MemorySegment = string;
+	using Arithmetic = string;
+	string className;
 
-	//void writePush(MemorySegment memorySegment, int index)
-	//{
-	//	codeVM += "push " + memorySegment + " " + std::to_string(index)+"\n";
-	//}
-	//void writePop(MemorySegment memorySegment, int index)
-	//{
-	//	codeVM += "pop " + memorySegment + " " + std::to_string(index) + "\n";
-	//}
-	//void writeAritmethic(Arithmetic arithmetic)
-	//{
-	//	codeVM += arithmetic + "\n";
-	//}
-	//void writeLabel(string label)
-	//{
-	//	codeVM += "label " + label + "\n";
-	//}
-	//void writeGoTo(string label)
-	//{
-	//	codeVM += "goto " + label + "\n";
-	//}
-	//void writeIfGoTo(string label)
-	//{
-	//	codeVM += "if-goto " + label + "\n";
-	//}
-	//void writeFunctionCall(string functionName, int argsQuantity)
-	//{
-	//	codeVM += "call " + className + "." + functionName + " " + std::to_string(argsQuantity)+"\n";
-	//}
-	//void writeFunctionDefinition(string functionName, int localsQuantity)
-	//{
-	//	codeVM += "function " + className + "." + functionName + " " + std::to_string(localsQuantity) + "\n";
-	//}
-	//void writeReturn()
-	//{
-	//	codeVM += "return\n";
-	//}
+	void writePush(MemorySegment memorySegment, int index)
+	{
+		codeVM += "push " + memorySegment + " " + std::to_string(index)+"\n";
+	}
+	void writePop(MemorySegment memorySegment, int index)
+	{
+		codeVM += "pop " + memorySegment + " " + std::to_string(index) + "\n";
+	}
+	void writeAritmethic(Arithmetic arithmetic)
+	{
+		codeVM += arithmetic + "\n";
+	}
+	void writeLabel(string label)
+	{
+		codeVM += "label " + label + "\n";
+	}
+	void writeGoTo(string label)
+	{
+		codeVM += "goto " + label + "\n";
+	}
+	void writeIfGoTo(string label)
+	{
+		codeVM += "if-goto " + label + "\n";
+	}
+	void writeFunctionCall(string functionName, int argsQuantity)
+	{
+		codeVM += "call " + className + "." + functionName + " " + std::to_string(argsQuantity)+"\n";
+	}
+	void writeFunctionDefinition(string functionName, int localsQuantity)
+	{
+		codeVM += "function " + className + "." + functionName + " " + std::to_string(localsQuantity) + "\n";
+	}
+	void writeReturn()
+	{
+		codeVM += "return\n";
+	}
 
 };
 
